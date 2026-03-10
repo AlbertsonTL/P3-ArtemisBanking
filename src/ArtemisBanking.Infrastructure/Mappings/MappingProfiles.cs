@@ -9,7 +9,7 @@ using ArtemisBanking.Domain.Entities;
 using AutoMapper;
 
 namespace ArtemisBanking.Infrastructure.Mappings;
-
+ 
 public class UserMappingProfile : Profile
 {
     public UserMappingProfile()
