@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace ArtemisBanking.Infrastructure.Seeds;
-
+ 
 public static class DefaultUserSeeder
 {
     public static readonly string[] Roles =
