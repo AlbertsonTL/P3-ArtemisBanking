@@ -19,36 +19,42 @@ El sistema simula las operaciones principales de un banco digital:
 El proyecto utiliza **Onion Architecture** para separar responsabilidades en capas:
 
 ```
-Domain
-Application
-Infrastructure
-WebApp
-WebAPI
+Domain          ← Núcleo: entidades y reglas del negocio
+Application     ← Servicios, DTOs, interfaces
+Shared          ← Capa transversal: Email, Helpers, Extensions
+Infrastructure  ← EF Core, repositorios, Hangfire, MailKit
+WebApp          ← Interfaz MVC (Admin, Cliente, Cajero)
+WebAPI          ← API REST con JWT
 ```
 
 ### Domain
 
-Contiene entidades y reglas del negocio.
+Núcleo del sistema. Contiene entidades del negocio, enumeraciones y la clase base de entidad. **Sin dependencias externas.**
 
 ### Application
 
-Servicios de aplicación, DTOs y lógica del sistema.
+Servicios de aplicación, DTOs, interfaces de repositorios y servicios. Depende únicamente de `Domain`. Define el contrato `IEmailService` que la capa `Shared/Infrastructure` implementa.
+
+### Shared ⭐ Nueva capa
+
+Capa **transversal** que provee funcionalidades reutilizables en todo el sistema:
+
+> La capa `Shared` **no depende** de `Infrastructure` ni de `Application`. Es referenciada por `Infrastructure` (implementación del email) y por `WebApp`/`WebAPI` (configuración de DI).
 
 ### Infrastructure
 
-Implementación de repositorios, EF Core, Email, Hangfire.
+Implementa los contratos de `Application`. Usa EF Core, ASP.NET Identity, MailKit (implementa `IEmailService` usando `EmailRequest` de `Shared`) y Hangfire para jobs en segundo plano.
 
 ### WebApp
 
-Interfaz web MVC para:
-
-* Administrador
-* Cliente
-* Cajero
+Interfaz web MVC con tres paneles:
+- **Admin** → Dashboard, usuarios, préstamos, tarjetas, cuentas
+- **Cliente** → Home, beneficiarios, transacciones, pagos
+- **Cajero** → Depósitos, retiros, operaciones
 
 ### WebAPI
 
-API REST protegida con **JWT**.
+API REST protegida con **JWT**. Documentada con Swagger.
 
 ---
 
@@ -100,7 +106,7 @@ Responsabilidades:
 * Arquitectura Onion
 * Identity
 * Generic Repository
-* Email Service
+* Email Service (Shared layer + Infrastructure)
 * Lógica de préstamos
 * Hangfire jobs
 * API REST
@@ -199,7 +205,7 @@ El sistema incluye:
 * ASP.NET Identity
 * Autenticación JWT
 * Autorización por roles
-* CVC de tarjetas cifrado SHA256
+* CVC de tarjetas cifrado SHA256 (vía `Shared.Helpers.CryptoHelper`)
 * Validación de transacciones
 
 ---
