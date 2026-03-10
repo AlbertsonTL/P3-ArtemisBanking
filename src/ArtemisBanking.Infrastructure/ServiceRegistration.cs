@@ -40,9 +40,8 @@ public static class ServiceRegistration
         // AutoMapper registra todos los profiles del assembly
         services.AddAutoMapper(typeof(UserMappingProfile).Assembly);
 
-        // Repositorio y servicio genérico
+        // Repositorio
         services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
-        services.AddScoped(typeof(IGenericService<,,>),   typeof(GenericService<,,,>));
 
         // Email
         services.AddScoped<IEmailService, EmailService>();

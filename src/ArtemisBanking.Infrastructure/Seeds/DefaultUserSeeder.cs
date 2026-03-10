@@ -100,6 +100,7 @@ public static class DefaultUserSeeder
     {
         public string FirstName { get; init; } = string.Empty;
         public string LastName { get; init; } = string.Empty;
+        public string IdentityCard { get; init; } = string.Empty;   
         public string IdentityCar { get; init; } = string.Empty;
         public string UserName { get; init; } = string.Empty;
         public string Email { get; init; } = string.Empty;
