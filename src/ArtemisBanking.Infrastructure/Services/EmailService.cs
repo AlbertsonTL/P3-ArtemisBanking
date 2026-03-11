@@ -6,7 +6,7 @@ using MimeKit;
 using Microsoft.Extensions.Configuration;
 
 namespace ArtemisBanking.Infrastructure.Services;
-
+ 
 public class EmailService : IEmailService
 {
     private readonly IConfiguration _configuration;
