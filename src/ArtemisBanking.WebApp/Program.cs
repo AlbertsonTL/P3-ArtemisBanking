@@ -28,6 +28,13 @@ builder.Services.AddSession(opt =>
     opt.Cookie.IsEssential = true;
 });
 
+builder.Services.ConfigureApplicationCookie(opt =>
+{
+    opt.LoginPath        = "/Account/Login";
+    opt.AccessDeniedPath = "/Account/AccessDenied";
+    opt.ExpireTimeSpan   = TimeSpan.FromHours(8);
+});
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
