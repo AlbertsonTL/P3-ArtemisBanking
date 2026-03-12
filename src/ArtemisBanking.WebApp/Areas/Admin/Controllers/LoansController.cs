@@ -45,10 +45,10 @@ public class LoansController : Controller
             MonthlyPayment = l.MonthlyPayment,
             IsActive = l.IsActive,
             CreatedAt = l.CreatedAt,
-            // Suma del "Principal" pendiente en los entries NO pagados
+            // Suma de Cuotas (QuotaAmount) pendientes en la tabla de amortización
             RemainingDebt = l.AmortizationEntries
                              .Where(e => !e.IsPaid)
-                             .Sum(e => e.Principal)
+                             .Sum(e => e.QuotaAmount)
         }).OrderByDescending(l => l.CreatedAt).ToList();
 
         return View(model);
