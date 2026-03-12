@@ -1,0 +1,101 @@
+@using ArtemisBanking.Domain.Enums
+@model IEnumerable<ArtemisBanking.WebApp.ViewModels.Admin.AccountListViewModel>
+@{
+    ViewData["Title"] = "Gestión de Cuentas de Ahorro";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark mb-0"><i class="fas fa-piggy-bank me-2 text-primary"></i> Libreta de Cuentas</h3>
+        <a asp-action="Create" class="btn btn-primary shadow-sm rounded-pill px-4 fw-medium">
+            <i class="fas fa-folder-plus me-2"></i> Crear Secundaria
+        </a>
+    </div>
+
+    <!-- Info Box -->
+    <div class="alert alert-primary bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3 p-3 mb-4 d-flex align-items-center">
+        <i class="fas fa-info-circle fs-4 text-primary me-3"></i>
+        <div>
+            <span class="d-block fw-bold text-dark">Política de Cancelación (Issue #25)</span>
+            <span class="small text-muted">La cuenta "Principal" no puede ser eliminada. Al cancelar una cuenta secundaria, el balance sobrante se transfiere inteligentemente a su cuenta principal.</span>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted">
+                    <tr>
+                        <th class="py-3 px-4 fw-semibold border-0">N° CUENTA</th>
+                        <th class="py-3 border-0">CLIENTE (TITULAR)</th>
+                        <th class="py-3 border-0 text-center">TIPO</th>
+                        <th class="py-3 border-0 text-end">BALANCE (RD$)</th>
+                        <th class="py-3 border-0 text-center">ESTADO</th>
+                        <th class="py-3 px-4 border-0 text-end">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody class="border-top-0">
+                    @foreach (var acc in Model)
+                    {
+                        <tr>
+                            <td class="px-4 fw-bold">
+                                <span class="badge bg-secondary bg-opacity-10 text-dark px-3 py-2 rounded-pill font-monospace" style="letter-spacing: 1px;">
+                                    @acc.AccountNumber
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-dark">@acc.ClientName</div>
+                                <small class="text-muted">Cédula: @acc.IdentityCard</small>
+                            </td>
+                            <td class="text-center fw-medium">
+                                @if (acc.AccountType == AccountType.Main) {
+                                    <span class="badge bg-primary rounded-pill px-3 py-1">PRINCIPAL <i class="fas fa-star ms-1 text-warning"></i></span>
+                                } else {
+                                    <span class="badge bg-light text-dark border rounded-pill px-3 py-1">SECUNDARIA</span>
+                                }
+                            </td>
+                            <td class="text-end fw-bold text-success">
+                                @acc.Balance.ToString("N2")
+                            </td>
+                            <td class="text-center">
+                                @if (acc.IsActive) {
+                                    <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3 py-1">ACTIVA</span>
+                                } else {
+                                    <span class="badge bg-danger bg-opacity-25 text-danger rounded-pill px-3 py-1">CANCELADA</span>
+                                }
+                            </td>
+                            <td class="text-end px-4">
+                                @if(acc.IsActive)
+                                {
+                                    if(acc.AccountType == AccountType.Main)
+                                    {
+                                        <span class="badge bg-light text-muted fw-normal fst-italic border border-light" title="La cuenta principal es blindada y no puede ser cerrada." style="cursor: help;">Intocable <i class="fas fa-shield-alt ms-1"></i></span>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="Cancel" asp-route-id="@acc.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-medium" title="Cerrar y Transferir Fondos" onclick="return confirm('¿Está seguro de cerrar esta cuenta secundaria? El balance de RD$ @acc.Balance.ToString("N2") será enviado a la Principal de @acc.ClientName.');">
+                                                Cerrar <i class="fas fa-times ms-1"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted small"><i class="fas fa-archive me-1"></i> Cerrada</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">No hay cuentas asignadas en el sistema...</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

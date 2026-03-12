@@ -1,0 +1,129 @@
+@using ArtemisBanking.Domain.Enums
+@model List<ArtemisBanking.WebApp.ViewModels.Admin.UserListViewModel>
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+    var currentFilter = ViewBag.CurrentFilter as UserRole?;
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark mb-0">Usuarios del Sistema</h3>
+        <a asp-action="Create" class="btn btn-primary shadow-sm rounded-pill px-4 fw-medium">
+            <i class="fas fa-plus me-2"></i> Nuevo Usuario
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-3">
+            <form method="get" asp-action="Index" class="d-flex align-items-center gap-3">
+                <label class="fw-medium text-muted mb-0">Filtrar por Rol:</label>
+                <select name="filterRole" class="form-select w-auto rounded-3 border-light bg-light" onchange="this.form.submit()">
+                    <option value="">TODOS LOS ROLES</option>
+                    @foreach (var role in Enum.GetValues<UserRole>())
+                    {
+                        if (currentFilter == role)
+                        {
+                            <option value="@role" selected>@role.ToString().ToUpper()</option>
+                        }
+                        else
+                        {
+                            <option value="@role">@role.ToString().ToUpper()</option>
+                        }
+                    }
+                </select>
+                <a asp-action="Index" class="btn btn-light btn-sm rounded-pill px-3">Limpiar Filtros</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Usuarios -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted">
+                    <tr>
+                        <th class="py-3 px-4 fw-semibold border-0">N° CÉDULA</th>
+                        <th class="py-3 border-0">NOMBRE COMPLETO</th>
+                        <th class="py-3 border-0">USUARIO (LOGIN)</th>
+                        <th class="py-3 border-0">ROL</th>
+                        <th class="py-3 border-0 text-center">ESTADO</th>
+                        <th class="py-3 px-4 border-0 text-end">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody class="border-top-0">
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td class="px-4 text-dark fw-medium">@user.IdentityCard</td>
+                            <td>
+                                <div class="fw-semibold text-dark">@user.FullName</div>
+                                <small class="text-muted">@user.Email</small>
+                            </td>
+                            <td><span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-3 py-2">@user.UserName</span></td>
+                            <td>
+                                @if (user.Role == UserRole.Admin)
+                                {
+                                    <span class="badge bg-danger rounded-pill px-3 py-2">ADMIN</span>
+                                }
+                                else if (user.Role == UserRole.Cliente)
+                                {
+                                    <span class="badge bg-primary rounded-pill px-3 py-2">CLIENTE</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2">@user.Role.ToString().ToUpper()</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (user.IsActive)
+                                {
+                                    <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3 py-2 d-inline-flex align-items-center">
+                                        <i class="fas fa-check-circle me-1"></i> ACTIVO
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger bg-opacity-25 text-danger rounded-pill px-3 py-2 d-inline-flex align-items-center">
+                                        <i class="fas fa-ban me-1"></i> INACTIVO
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end px-4">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-outline-primary btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 30px;" title="Editar Info">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    
+                                    <form asp-action="ToggleStatus" asp-route-id="@user.Id" method="post" class="d-inline">
+                                        @if (user.IsActive)
+                                        {
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 30px;" title="Desactivar" onclick="return confirm('¿Bloquear a este usuario?');">
+                                                <i class="fas fa-user-lock"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="btn btn-outline-success btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 30px;" title="Activar" onclick="return confirm('¿Activar a este usuario?');">
+                                                <i class="fas fa-user-check"></i>
+                                            </button>
+                                        }
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-search fa-3x mb-3 text-light"></i>
+                                <h5>No se encontraron usuarios...</h5>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

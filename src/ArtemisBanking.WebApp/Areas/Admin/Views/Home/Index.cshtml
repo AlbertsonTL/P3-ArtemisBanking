@@ -1,0 +1,140 @@
+@using ArtemisBanking.WebApp.ViewModels.Admin
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold mb-0" style="color: #1a2234;">Panel de Control <span class="text-primary">Admin</span></h2>
+            <p class="text-muted">Resumen general de las operaciones del banco</p>
+        </div>
+    </div>
+
+    <!-- Primera fila: Clientes y Productos -->
+    <div class="row g-4 mb-4">
+        <!-- Clientes Activos -->
+        <div class="col-xl-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100 rounded-4">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Clientes Activos</p>
+                        <h3 class="fw-bolder mb-0 text-success">@Model.TotalActiveClients</h3>
+                    </div>
+                    <div class="bg-success bg-opacity-10 text-success rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-users fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clientes Inactivos -->
+        <div class="col-xl-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100 rounded-4">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Clientes Inactivos</p>
+                        <h3 class="fw-bolder mb-0 text-danger">@Model.TotalInactiveClients</h3>
+                    </div>
+                    <div class="bg-danger bg-opacity-10 text-danger rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-user-times fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productos Asignados -->
+        <div class="col-xl-3 col-sm-6">
+             <div class="card border-0 shadow-sm h-100 rounded-4">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Productos Totales</p>
+                        <h3 class="fw-bolder mb-0 text-primary">@Model.TotalAssignedProducts</h3>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-box-open fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Balance Total -->
+        <div class="col-xl-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100 rounded-4" style="background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between text-white">
+                    <div>
+                        <p class="text-uppercase text-white-50 fw-bold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Capital del Banco</p>
+                        <h3 class="fw-bolder mb-0">RD$ @Model.TotalSavingsBalance.ToString("N2")</h3>
+                    </div>
+                    <div class="bg-white bg-opacity-25 rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-piggy-bank fs-4 text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Segunda fila: Préstamos, Tarjetas y Movimientos -->
+    <div class="row g-4">
+        <!-- Préstamos Activos -->
+        <div class="col-xl-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100 rounded-4 border-start border-4 border-warning">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Préstamos Activos</p>
+                        <h3 class="fw-bolder mb-0 text-dark">@Model.TotalActiveLoans</h3>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-hand-holding-usd fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjetas Activas -->
+        <div class="col-xl-3 col-sm-6">
+             <div class="card border-0 shadow-sm h-100 rounded-4 border-start border-4 border-info">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Tarjetas Activas</p>
+                        <h3 class="fw-bolder mb-0 text-dark">@Model.TotalActiveCreditCards</h3>
+                    </div>
+                    <div class="text-info">
+                        <i class="fas fa-credit-card fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Transacciones -->
+        <div class="col-xl-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100 rounded-4 border-start border-4 border-secondary">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Histórico Tx</p>
+                        <h3 class="fw-bolder mb-0 text-dark">@Model.TotalTransactions</h3>
+                    </div>
+                    <div class="text-secondary">
+                        <i class="fas fa-exchange-alt fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transacciones de Hoy -->
+        <div class="col-xl-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100 rounded-4 border-start border-4 border-success">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Pagos Hoy</p>
+                        <h3 class="fw-bolder mb-0 text-dark">@Model.TodayPayments</h3>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-calendar-day fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,114 @@
+@model IEnumerable<ArtemisBanking.WebApp.ViewModels.Admin.CardListViewModel>
+@{
+    ViewData["Title"] = "Gestión de Tarjetas Crédito";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark mb-0"><i class="fas fa-credit-card me-2 text-info"></i> Tarjetas de Crédito</h3>
+        <a asp-action="Assign" class="btn btn-info text-white shadow-sm rounded-pill px-4 fw-medium">
+            <i class="fas fa-plus me-2"></i> Asignar TC
+        </a>
+    </div>
+
+    <!-- Modals de Edición de Límite -->
+    @foreach(var card in Model.Where(c => c.IsActive))
+    {
+        <div class="modal fade" id="limitModal@(card.Id)" tabindex="-1" aria-labelledby="limitLabel@(card.Id)" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold" id="limitLabel@(card.Id)">Editar Límite - @card.CardNumber.Substring(12)</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form asp-action="UpdateLimit" method="post">
+                        <div class="modal-body py-4">
+                            <input type="hidden" name="Id" value="@card.Id" />
+                            <p class="text-muted small mb-3">
+                                Cliente: @card.ClientName <br/>
+                                <strong>Deuda actual: RD$ @card.DebtAmount.ToString("N2")</strong>
+                            </p>
+                            <label class="form-label fw-bold">Nuevo Límite (RD$)</label>
+                            <input type="number" step="0.01" min="1000" name="NewLimit" class="form-control form-control-lg bg-light" value="@Math.Round(card.CreditLimit)" required />
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">Guardar Límite</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Tabla -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted">
+                    <tr>
+                        <th class="py-3 px-4 fw-semibold border-0">NÚMERO TARJETA</th>
+                        <th class="py-3 border-0">CLIENTE (TITULAR)</th>
+                        <th class="py-3 border-0 text-end">LÍMITE (RD$)</th>
+                        <th class="py-3 border-0 text-end">DEDUDA (RD$)</th>
+                        <th class="py-3 border-0 text-center">ESTADO</th>
+                        <th class="py-3 px-4 border-0 text-end">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody class="border-top-0">
+                    @foreach (var c in Model)
+                    {
+                        var enDeuda = c.DebtAmount > 0;
+                        <tr>
+                            <td class="px-4 fw-bold">
+                                <span class="badge bg-dark bg-opacity-10 text-dark px-3 py-2 rounded-pill font-monospace">
+                                    **** **** **** @c.CardNumber.Substring(12)
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-dark">@c.ClientName</div>
+                                <small class="text-muted">Cédula: @c.IdentityCard</small>
+                            </td>
+                            <td class="text-end fw-medium text-success">
+                                @c.CreditLimit.ToString("N2")
+                                @if(c.IsActive) {
+                                    <button class="btn btn-link btn-sm p-0 ms-1 text-primary" data-bs-toggle="modal" data-bs-target="#limitModal@(c.Id)" title="Modificar Límite"><i class="fas fa-edit"></i></button>
+                                }
+                            </td>
+                            <td class="text-end fw-bold @(enDeuda ? "text-danger" : "text-muted")">
+                                @c.DebtAmount.ToString("N2")
+                            </td>
+                            <td class="text-center">
+                                @if (c.IsActive) {
+                                    <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3 py-1">ACTIVA</span>
+                                } else {
+                                    <span class="badge bg-danger bg-opacity-25 text-danger rounded-pill px-3 py-1">CANCELADA</span>
+                                }
+                            </td>
+                            <td class="text-end px-4">
+                                @if(c.IsActive)
+                                {
+                                    <form asp-action="ToggleStatus" asp-route-id="@c.Id" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3 fw-medium" title="Inactivar / Cancelar" onclick="return confirm('¿Cancelar esta tarjeta?');">
+                                            Cancelar <i class="fas fa-ban ms-1"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small"><i class="fas fa-lock me-1"></i> Cerrada</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">No hay tarjetas asignadas...</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
