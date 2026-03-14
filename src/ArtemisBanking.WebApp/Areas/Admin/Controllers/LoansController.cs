@@ -13,13 +13,16 @@ namespace ArtemisBanking.WebApp.Areas.Admin.Controllers;
 public class LoansController : Controller
 {
     private readonly IGenericRepository<Loan, int> _loanRepository;
+    private readonly IGenericRepository<SavingsAccount, int> _savingsRepository;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public LoansController(
         IGenericRepository<Loan, int> loanRepository,
+        IGenericRepository<SavingsAccount, int> savingsRepository,
         UserManager<ApplicationUser> userManager)
     {
         _loanRepository = loanRepository;
+        _savingsRepository = savingsRepository;
         _userManager = userManager;
     }
 
@@ -57,8 +60,88 @@ public class LoansController : Controller
     [HttpGet]
     public IActionResult Assign()
     {
-        // Este wizard depende del ILoanService y lógica matemática de Albertson.
-        // Mientras, entregamos la vista que indica el bloqueo temporal para no romper el programa.
-        return View();
+        var model = new AssignLoanViewModel();
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Assign(AssignLoanViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var client = await _userManager.FindByIdAsync(model.ClientId);
+        if (client == null || client.Role != UserRole.Cliente || !client.IsActive)
+        {
+            TempData["Error"] = "El cliente seleccionado no es válido o está inactivo.";
+            return View(model);
+        }
+
+        // Buscar cuenta principal para desembolsar el monto
+        var mainAccount = await _savingsRepository.FirstOrDefaultAsync(s => s.ClientId == client.Id && s.AccountType == AccountType.Main);
+        if (mainAccount == null)
+        {
+            TempData["Error"] = "El cliente no posee una Cuenta de Ahorro Principal. No se puede desembolsar el préstamo.";
+            return View(model);
+        }
+
+        // 1. Calcular Cuota Fija (Sistema Francés)
+        double r = (double)(model.AnnualInterestRate / 100m / 12m); // Tasa mensual decimal
+        int n = model.TermMonths;
+        double p = (double)model.Amount;
+        
+        double cuotaFija = 0;
+        if (r > 0)
+        {
+            cuotaFija = p * r / (1 - Math.Pow(1 + r, -n));
+        }
+        else
+        {
+            cuotaFija = p / n; // En caso de que la tasa sea 0%
+        }
+
+        decimal montlyPayment = Math.Round((decimal)cuotaFija, 2);
+
+        // 2. Crear Préstamo
+        var adminId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+        var loan = new Loan
+        {
+            LoanNumber = ArtemisBanking.Shared.Helpers.AccountNumberGenerator.Generate9Digits(),
+            Amount = model.Amount,
+            AnnualInterestRate = model.AnnualInterestRate,
+            TermMonths = model.TermMonths,
+            MonthlyPayment = montlyPayment,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            ClientId = client.Id,
+            AdminId = adminId!
+        };
+
+        // 3. Generar Tabla de Amortización Mensual
+        for (int i = 1; i <= n; i++)
+        {
+            loan.AmortizationEntries.Add(new AmortizationEntry
+            {
+                PaymentDate = DateTime.UtcNow.AddMonths(i),
+                QuotaAmount = montlyPayment,
+                IsPaid = false,
+                IsLate = false
+            });
+        }
+
+        // 4. Desembolsar en Cuenta Principal
+        mainAccount.Balance += model.Amount;
+
+        // 5. Guardar en Base de Datos (Transacción Implícita de EF)
+        await _loanRepository.AddAsync(loan);
+        _savingsRepository.Update(mainAccount);
+        await _loanRepository.SaveChangesAsync();
+        await _savingsRepository.SaveChangesAsync();
+
+        TempData["Success"] = $"Préstamo de RD$ {model.Amount:N2} aprobado y desembolsado con éxito a la cuenta del titular. Cuota: RD$ {montlyPayment:N2}";
+        return RedirectToAction(nameof(Index));
     }
 }
