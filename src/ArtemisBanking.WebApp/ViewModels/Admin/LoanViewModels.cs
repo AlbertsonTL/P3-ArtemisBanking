@@ -48,3 +48,42 @@ public class AssignLoanViewModel
     [Display(Name = "Plazo de Financiamiento (Meses)")]
     public int TermMonths { get; set; }
 }
+
+/// <summary>
+/// ViewModel para la pantalla de advertencia de alto riesgo (Issue #18).
+/// Muestra mensaje de riesgo y datos del préstamo pendiente de confirmar.
+/// </summary>
+public class RiskWarningViewModel
+{
+    // Datos del préstamo pendiente (para re-enviar al confirmar)
+    public string ClientId            { get; set; } = string.Empty;
+    public string ClientName          { get; set; } = string.Empty;
+    public decimal Amount             { get; set; }
+    public decimal AnnualInterestRate { get; set; }
+    public int    TermMonths          { get; set; }
+
+    // Datos del análisis de riesgo (para mostrar en pantalla)
+    public string  RiskMessage        { get; set; } = string.Empty;
+    public decimal DeudaActualCliente { get; set; }
+    public decimal PromedioSistema    { get; set; }
+    public decimal TotalNuevoPrestamo { get; set; }
+}
+
+/// <summary>
+/// ViewModel para el formulario de edición de tasa de interés (Issue #21).
+/// </summary>
+public class EditLoanRateViewModel
+{
+    public int    LoanId             { get; set; }
+    public string LoanNumber         { get; set; } = string.Empty;
+    public string ClientName         { get; set; } = string.Empty;
+    public decimal CurrentRate       { get; set; }
+    public decimal CurrentMonthly    { get; set; }
+    public int    RemainingQuotas    { get; set; }
+
+    [Required(ErrorMessage = "La tasa de interés es obligatoria.")]
+    [Range(0.01, 50.0, ErrorMessage = "La tasa debe ser mayor a 0 y menor o igual a 50%.")]
+    [Display(Name = "Nueva Tasa de Interés Anual (%)")]
+    public decimal NewAnnualInterestRate { get; set; }
+}
+
