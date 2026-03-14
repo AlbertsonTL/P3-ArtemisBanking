@@ -1,0 +1,27 @@
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      },
+      "enableLiveDashboard": false
+    },
+    "logLevel": {
+      "ArtemisBanking": "Information",
+      "default": "Warning",
+      "Host.Results": "Error",
+      "Function": "Information",
+      "Host.Aggregator": "Trace"
+    }
+  },
+  "functionTimeout": "00:05:00",
+  "extensions": {
+    "timers": {
+      "healthMonitor": {
+        "enabled": true
+      }
+    }
+  }
+}
