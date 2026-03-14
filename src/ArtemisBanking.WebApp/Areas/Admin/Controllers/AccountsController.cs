@@ -18,15 +18,18 @@ public class AccountsController : Controller
 {
     private readonly IGenericRepository<SavingsAccount, int> _savingsRepository;
     private readonly IGenericRepository<Loan, int> _loanRepository;
+    private readonly IGenericRepository<Transaction, int> _transactionRepository;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public AccountsController(
         IGenericRepository<SavingsAccount, int> savingsRepository,
         IGenericRepository<Loan, int> loanRepository,
+        IGenericRepository<Transaction, int> transactionRepository,
         UserManager<ApplicationUser> userManager)
     {
         _savingsRepository = savingsRepository;
         _loanRepository = loanRepository;
+        _transactionRepository = transactionRepository;
         _userManager = userManager;
     }
 
@@ -134,7 +137,25 @@ public class AccountsController : Controller
             {
                 mainAccount.Balance += account.Balance;
                 _savingsRepository.Update(mainAccount);
-                TempData["Success"] = $"Cuenta {account.AccountNumber} cancelada. Los RD$ {account.Balance:N2} sobrantes fueron transferidos a su Cuenta Principal (#{mainAccount.AccountNumber}).";
+
+                var amountTransferred = account.Balance;
+                var sourceAccountNumber = account.AccountNumber;
+                
+                var transaction = new Transaction
+                {
+                    Type = TransactionType.Credit,
+                    Amount = amountTransferred,
+                    Date = DateTime.UtcNow,
+                    Status = TransactionStatus.Approved,
+                    Category = TransactionCategory.SavingsTransfer,
+                    Origin = $"Cierre Cta {sourceAccountNumber}",
+                    Beneficiary = mainAccount.AccountNumber,
+                    SavingsAccountId = mainAccount.Id
+                };
+                await _transactionRepository.AddAsync(transaction);
+                await _transactionRepository.SaveChangesAsync();
+
+                TempData["Success"] = $"Cuenta {account.AccountNumber} cancelada. Los RD$ {amountTransferred:N2} sobrantes fueron transferidos a su Cuenta Principal (#{mainAccount.AccountNumber}).";
             }
         }
         else

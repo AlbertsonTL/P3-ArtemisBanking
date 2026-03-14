@@ -4,6 +4,7 @@ using ArtemisBanking.Domain.Enums;
 using ArtemisBanking.WebApp.ViewModels.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ArtemisBanking.WebApp.Areas.Admin.Controllers;
 
@@ -33,41 +34,53 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        // Usuarios (Clientes)
-        var allUsers = await _userRepository.GetAllAsync();
-        var clients = allUsers.Where(u => u.Role == UserRole.Cliente).ToList();
+        var usersQuery = _userRepository.Query();
+        var savingsQuery = _savingsRepository.Query();
+        var loansQuery = _loanRepository.Query();
+        var cardsQuery = _cardRepository.Query();
+        var transactionsQuery = _transactionRepository.Query();
+
+        var activeClientsCount = await usersQuery.CountAsync(u => u.Role == UserRole.Cliente && u.IsActive);
+        var inactiveClientsCount = await usersQuery.CountAsync(u => u.Role == UserRole.Cliente && !u.IsActive);
         
-        // Productos
-        var savings = await _savingsRepository.GetAllAsync();
-        var loans = await _loanRepository.GetAllAsync();
-        var cards = await _cardRepository.GetAllAsync();
+        var totalSavings = await savingsQuery.CountAsync();
+        var totalLoans = await loansQuery.CountAsync();
+        var totalCards = await cardsQuery.CountAsync();
+
+        var activeLoansCount = await loansQuery.CountAsync(l => l.IsActive);
+        var totalTransactionsCount = await transactionsQuery.CountAsync();
+
+        var activeSavingsQuery = savingsQuery.Where(s => s.IsActive);
+        var activeSavingsBalance = await activeSavingsQuery.SumAsync(s => s.Balance);
+
+        var today = DateTime.UtcNow.Date;
+        var todayPaymentsCount = await transactionsQuery.CountAsync(t => t.Date.Date == today);
         
-        // Transacciones
-        var transactions = await _transactionRepository.GetAllAsync();
+        var activeCardsCount = await cardsQuery.CountAsync(c => c.IsActive);
 
         var model = new DashboardViewModel
         {
             // 1 & 2. Clientes (Activos e Inactivos)
-            TotalActiveClients = clients.Count(c => c.IsActive),
-            TotalInactiveClients = clients.Count(c => !c.IsActive),
+            TotalActiveClients = activeClientsCount,
+            TotalInactiveClients = inactiveClientsCount,
             
             // 3. Productos (Cuentas + Préstamos + TC)
-            TotalAssignedProducts = savings.Count() + loans.Count() + cards.Count(),
+            TotalAssignedProducts = totalSavings + totalLoans + totalCards,
             
             // 4. Préstamos activos
-            TotalActiveLoans = loans.Count(l => l.IsActive),
+            TotalActiveLoans = activeLoansCount,
             
             // 5. Transacciones Totales
-            TotalTransactions = transactions.Count(),
+            TotalTransactions = totalTransactionsCount,
             
             // 6. Balance total (Cuentas activas)
-            TotalSavingsBalance = savings.Where(s => s.IsActive).Sum(s => s.Balance),
+            TotalSavingsBalance = activeSavingsBalance,
             
-            // 7. Pagos realizados hoy (Transacciones de ingreso al banco - simulamos con fecha de hoy)
-            TodayPayments = transactions.Count(t => t.Date.Date == DateTime.UtcNow.Date),
+            // 7. Pagos realizados hoy
+            TodayPayments = todayPaymentsCount,
             
             // 8. Tarjetas de crédito activas
-            TotalActiveCreditCards = cards.Count(c => c.IsActive)
+            TotalActiveCreditCards = activeCardsCount
         };
 
         return View(model);
