@@ -20,9 +20,9 @@ namespace ArtemisBanking.Tests.Services;
 /// </summary>
 public class LoanServiceCalculationTests
 {
-    // ═════════════════════════════════════════════════════════════════════════
+    
     // Helpers: instanciar LoanService con mocks mínimos
-    // ═════════════════════════════════════════════════════════════════════════
+    
 
     private static LoanService BuildServiceWithContext(AppDbContext ctx)
     {
@@ -52,11 +52,7 @@ public class LoanServiceCalculationTests
         var store = new Mock<IUserStore<ApplicationUser>>();
         return new Mock<UserManager<ApplicationUser>>(
             store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-    }
-
-    // ═════════════════════════════════════════════════════════════════════════
-    // ISSUE #18 — CalcularCuotaFrancesa
-    // ═════════════════════════════════════════════════════════════════════════
+    }    
 
     /// <summary>
     /// Caso de prueba 1 (obligatorio Issue #18):
@@ -130,11 +126,7 @@ public class LoanServiceCalculationTests
 
         act.Should().Throw<ArgumentException>()
            .WithParameterName("monto");
-    }
-
-    // ═════════════════════════════════════════════════════════════════════════
-    // ISSUE #18 — EsClienteAltoRiesgoAsync
-    // ═════════════════════════════════════════════════════════════════════════
+    }    
 
     /// <summary>
     /// Cliente sin deuda + nuevo préstamo pequeño NoRisk.
