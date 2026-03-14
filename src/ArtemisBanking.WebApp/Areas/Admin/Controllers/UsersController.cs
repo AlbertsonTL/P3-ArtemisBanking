@@ -9,6 +9,7 @@ using ArtemisBanking.WebApp.ViewModels.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ArtemisBanking.WebApp.Areas.Admin.Controllers;
 
@@ -19,29 +20,43 @@ public class UsersController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IGenericRepository<SavingsAccount, int> _savingsRepository;
     private readonly IGenericRepository<Loan, int> _loanRepository;
+    private readonly IGenericRepository<Transaction, int> _transactionRepository;
     private readonly IEmailService _emailService;
 
     public UsersController(
         UserManager<ApplicationUser> userManager,
         IGenericRepository<SavingsAccount, int> savingsRepository,
         IGenericRepository<Loan, int> loanRepository,
+        IGenericRepository<Transaction, int> transactionRepository,
         IEmailService emailService)
     {
         _userManager = userManager;
         _savingsRepository = savingsRepository;
         _loanRepository = loanRepository;
+        _transactionRepository = transactionRepository;
         _emailService = emailService;
     }
 
     [HttpGet]
-    public IActionResult Index(UserRole? filterRole)
+    public async Task<IActionResult> Index(UserRole? filterRole, int pg = 1)
     {
-        var users = _userManager.Users.ToList();
+        var usersQuery = _userManager.Users.AsQueryable();
 
         if (filterRole.HasValue)
         {
-            users = users.Where(u => u.Role == filterRole.Value).ToList();
+            usersQuery = usersQuery.Where(u => u.Role == filterRole.Value);
         }
+
+        const int pageSize = 5;
+        if (pg < 1) pg = 1;
+
+        int totalUsers = await usersQuery.CountAsync();
+        int totalPages = (int)Math.Ceiling(totalUsers / (double)pageSize);
+
+        var users = await usersQuery
+            .Skip((pg - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
 
         var viewModels = users.Select(u => new UserListViewModel
         {
@@ -55,6 +70,9 @@ public class UsersController : Controller
         }).ToList();
 
         ViewBag.CurrentFilter = filterRole;
+        ViewBag.CurrentPage = pg;
+        ViewBag.TotalPages = totalPages;
+        
         return View(viewModels);
     }
 
@@ -207,6 +225,20 @@ public class UsersController : Controller
                 _savingsRepository.Update(mainAccount);
                 await _savingsRepository.SaveChangesAsync();
                 
+                var transaction = new Transaction
+                {
+                    Type = TransactionType.Credit,
+                    Amount = model.MontoAdicional,
+                    Date = DateTime.UtcNow,
+                    Status = TransactionStatus.Approved,
+                    Category = TransactionCategory.SavingsTransfer,
+                    Origin = "Ajuste de Admin",
+                    Beneficiary = mainAccount.AccountNumber,
+                    SavingsAccountId = mainAccount.Id
+                };
+                await _transactionRepository.AddAsync(transaction);
+                await _transactionRepository.SaveChangesAsync();
+                
                 TempData["Success"] = $"Usuario editado. Se acreditaron RD$ {model.MontoAdicional:N2} a su cuenta principal.";
             }
             else
@@ -247,5 +279,20 @@ public class UsersController : Controller
         TempData["Success"] = $"El usuario {user.UserName} ha sido {status}.";
 
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    [Route("Api/Clients")]
+    public async Task<IActionResult> GetClientsApi()
+    {
+        var users = await _userManager.GetUsersInRoleAsync("Cliente");
+        var activeClients = users.Where(u => u.IsActive).Select(u => new
+        {
+            id = u.Id,
+            fullName = $"{u.FirstName} {u.LastName}",
+            identityCard = u.IdentityCard
+        }).ToList();
+
+        return Json(activeClients);
     }
 }

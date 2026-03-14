@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using ArtemisBanking.Domain.Enums;
 
 namespace ArtemisBanking.WebApp.ViewModels.Admin;
 
@@ -37,4 +38,19 @@ public class EditLimitViewModel
     [Required]
     [Range(1000, 10000000, ErrorMessage = "Límite inválido")]
     public decimal NewLimit { get; set; }
+}
+
+public class CardConsumptionViewModel
+{
+    public string CardNumber { get; set; } = string.Empty;
+    public string ClientName { get; set; } = string.Empty;
+    public List<ConsumptionItemViewModel> Consumptions { get; set; } = new();
+}
+
+public class ConsumptionItemViewModel
+{
+    public decimal Amount { get; set; }
+    public DateTime Date { get; set; }
+    public string CommerceName { get; set; } = string.Empty;
+    public ConsumptionStatus Status { get; set; }
 }
