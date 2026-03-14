@@ -116,7 +116,7 @@ public class CardsController : Controller
         var card = await _cardRepository.GetByIdAsync(id);
         if (card == null) return NotFound();
 
-        // Regla Crítica Issue #23: No se puede cancelar ni desactivar una tarjeta que tenga deuda
+        // Regla Crítica: No se puede cancelar ni desactivar una tarjeta que tenga deuda
         if (card.IsActive && card.DebtAmount > 0)
         {
             TempData["Error"] = $"No se puede desactivar o cancelar la tarjeta bloqueada ({card.CardNumber}). Debe pagar RD$ {card.DebtAmount:N2} pendiente primero.";

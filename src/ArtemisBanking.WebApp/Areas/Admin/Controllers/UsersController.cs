@@ -101,7 +101,7 @@ public class UsersController : Controller
         // Asignar rol Identity
         await _userManager.AddToRoleAsync(user, model.Role.ToString());
 
-        // 2. Si es Cliente, crearle su cuenta principal (9 dígitos) (Issue #13)
+        // 2. Si es Cliente, crearle su cuenta principal (9 dígitos)
         if (model.Role == UserRole.Cliente)
         {
             string newAccountNumber;
@@ -195,7 +195,7 @@ public class UsersController : Controller
 
         await _userManager.UpdateAsync(user);
 
-        // Si es cliente, aplicar MontoAdicional sumando al balance de su cuenta PRINCIPAL (Issue #14)
+        // Si es cliente, aplicar MontoAdicional sumando al balance de su cuenta PRINCIPAL
         if (user.Role == UserRole.Cliente && model.MontoAdicional > 0)
         {
             var mainAccount = await _savingsRepository.FirstOrDefaultAsync(
@@ -230,7 +230,7 @@ public class UsersController : Controller
 
         var currentAdminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         
-        // Regla: Admin no puede activarse/desactivarse a sí mismo (Issue #15)
+        // Regla: Admin no puede activarse/desactivarse a sí mismo
         if (id == currentAdminId)
         {
             TempData["Error"] = "Operación denegada. No puedes cambiar el estado de tu propio usuario.";

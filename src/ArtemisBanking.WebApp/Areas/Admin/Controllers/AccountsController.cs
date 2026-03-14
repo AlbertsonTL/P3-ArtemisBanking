@@ -92,7 +92,7 @@ public class AccountsController : Controller
 
         var currentAdminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // 2. Crear cuenta como SECUNDARIA. La cuenta PRINCIPAL solo se crea de forma automática al registrar usuario (Issue #24).
+        // 2. Crear cuenta como SECUNDARIA. La cuenta PRINCIPAL solo se crea de forma automática al registrar usuario.
         var account = new SavingsAccount
         {
             AccountNumber = newAccountNumber,
@@ -117,7 +117,7 @@ public class AccountsController : Controller
         var account = await _savingsRepository.GetByIdAsync(id);
         if (account == null) return NotFound();
 
-        // Regla Issue #25: La cuenta principal NUNCA puede ser eliminada. 
+        // Regla: La cuenta principal NUNCA puede ser eliminada. 
         if (account.AccountType == AccountType.Main)
         {
             TempData["Error"] = "La cuenta principal del usuario NO puede ser eliminada, bloqueada o cancelada estructuralmente bajo ninguna circunstancia.";
