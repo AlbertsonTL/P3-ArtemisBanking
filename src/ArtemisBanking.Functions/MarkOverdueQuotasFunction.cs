@@ -7,13 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace ArtemisBanking.Functions;
 
 /// <summary>
-/// Azure Function — Timer Trigger diario.
-/// Issue #20: Marca como Atrasada=true todas las cuotas con:
-///   - EstadoPago = Pendiente (IsPaid = false)
-///   - FechaPago &lt; DateTime.Today
-///
-/// También garantiza que las cuotas pagadas nunca queden marcadas como atrasadas.
-/// Para testing manual: dispara desde Azure Portal Functions "Run now".
+/// Azure Function Timer Trigger diario.
 /// </summary>
 public class MarkOverdueQuotasFunction
 {
