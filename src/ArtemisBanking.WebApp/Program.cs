@@ -55,6 +55,11 @@ if (app.Environment.IsDevelopment())
 
 await DefaultUserSeeder.SeedAsync(app.Services);
 
+app.MapAreaControllerRoute(
+    name: "AdminArea",
+    areaName: "Admin",
+    pattern: "Admin/{controller=Home}/{action=Index}/{id?}");
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");

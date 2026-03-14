@@ -1,0 +1,176 @@
+@model ArtemisBanking.WebApp.ViewModels.Admin.AssignLoanViewModel
+@{
+    ViewData["Title"] = "Asignar Préstamo Personal";
+}
+
+<div class="row justify-content-center py-4">
+    <div class="col-xl-6 col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-warning bg-opacity-10 border-0 p-4">
+                <h4 class="fw-bold text-warning text-dark mb-0"><i class="fas fa-file-signature me-2"></i> Asignación de Préstamo</h4>
+                <p class="text-muted mb-0 small">Emite un préstamo y calcula automáticamente la tabla de amortización con cuota francesa y desembolsa en su cuenta principal.</p>
+            </div>
+            
+            <form asp-action="Assign" method="post" class="card-body p-4">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-4 position-relative">
+                    <label class="form-label fw-bold text-dark">Lupa Buscar Cliente (Escriba la cédula o nombre)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="clientSearchInput" class="form-control form-control-lg bg-light border-start-0" placeholder="Ej. 000-0000000-0" autocomplete="off" />
+                        <!-- Campo oculto donde irá el ClientId validado -->
+                        <input type="hidden" asp-for="ClientId" id="hiddenClientId" />
+                    </div>
+                    <span asp-validation-for="ClientId" class="text-danger small mt-1 d-block" id="clientErrorMsg"></span>
+                    <div id="searchBadge" class="mt-2 d-none">
+                        <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3 py-2 fw-medium border border-success"><i class="fas fa-check-circle me-1"></i> Cliente Seleccionado: <span id="clientNameShow"></span></span>
+                        <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="clearClient()">Cambiar</button>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-12">
+                        <label asp-for="Amount" class="form-label fw-bold text-dark">Monto del Préstamo (RD$)</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-white border-0 text-muted fw-bold">RD$</span>
+                            <input asp-for="Amount" id="Amount" class="form-control border-0 bg-light numeric-calc" placeholder="Ej. 50000" />
+                        </div>
+                        <span asp-validation-for="Amount" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="AnnualInterestRate" class="form-label fw-bold text-dark">Tasa de Interés Anual (%)</label>
+                        <div class="input-group input-group-lg">
+                            <input asp-for="AnnualInterestRate" id="Rate" type="number" step="0.01" class="form-control border-0 bg-light numeric-calc" value="18.00" />
+                            <span class="input-group-text bg-white border-0 text-muted fw-bold">%</span>
+                        </div>
+                        <span asp-validation-for="AnnualInterestRate" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="TermMonths" class="form-label fw-bold text-dark">Plazo (Meses)</label>
+                        <select asp-for="TermMonths" id="Term" class="form-select form-select-lg border-0 bg-light numeric-calc">
+                            <option value="6">6 Meses</option>
+                            <option value="12">12 Meses (1 Año)</option>
+                            <option value="18">18 Meses (1.5 Años)</option>
+                            <option value="24">24 Meses (2 Años)</option>
+                            <option value="36">36 Meses (3 Años)</option>
+                            <option value="48">48 Meses (4 Años)</option>
+                            <option value="60">60 Meses (5 Años)</option>
+                        </select>
+                        <span asp-validation-for="TermMonths" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Info Box - Calculadora en Vivo -->
+                <div class="alert alert-dark border-0 bg-dark text-white rounded-3 p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-calculator me-2 text-warning"></i> Resumen de Amortización</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-white-50">Cuota Fija Mensual Aproximada:</span>
+                        <span class="fw-bold fs-5 text-warning" id="liveQuotaDisplay">RD$ 0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-white-50">Total de Intereses:</span>
+                        <span class="fw-medium text-white" id="liveInterestDisplay">RD$ 0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-white-50">Total a Pagar (Capital + Intereses):</span>
+                        <span class="fw-medium text-white" id="liveTotalDisplay">RD$ 0.00</span>
+                    </div>
+                    <hr class="border-secondary opacity-50">
+                    <small class="text-white-50 fst-italic"><i class="fas fa-info-circle me-1"></i> El monto del préstamo (Capital) será depositado inmediatamente en la Cuenta de Ahorro Principal del cliente.</small>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-4">
+                    <a asp-action="Index" class="btn btn-light px-4 rounded-pill fw-medium">Cancelar</a>
+                    <button type="submit" class="btn btn-warning px-5 rounded-pill fw-bold text-dark shadow-sm">
+                        <i class="fas fa-check-double me-2"></i> Emitir Préstamo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <!-- Lógica de Búsqueda de cliente usando AJAX y Calculadora en vivo -->
+    <script>
+
+        // Calculadora en vivo de la cuota francesa
+        function calculateLoanLive() {
+            var p = parseFloat($('#Amount').val());
+            var annualRate = parseFloat($('#Rate').val());
+            var n = parseInt($('#Term').val());
+
+            if(isNaN(p) || p <= 0 || isNaN(annualRate) || isNaN(n)) {
+                $('#liveQuotaDisplay').text("RD$ 0.00");
+                $('#liveInterestDisplay').text("RD$ 0.00");
+                $('#liveTotalDisplay').text("RD$ 0.00");
+                return;
+            }
+
+            var r = (annualRate / 100) / 12;
+            var quota = 0;
+            
+            if(r > 0) {
+                quota = p * r / (1 - Math.pow(1 + r, -n));
+            } else {
+                quota = p / n;
+            }
+
+            var totalToPay = quota * n;
+            var totalInterests = totalToPay - p;
+
+            $('#liveQuotaDisplay').text("RD$ " + quota.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            $('#liveTotalDisplay').text("RD$ " + totalToPay.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            $('#liveInterestDisplay').text("RD$ " + totalInterests.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        }
+
+        $('.numeric-calc').on('input change', calculateLoanLive);
+        
+        // Simulación sencilla para que el Input mande la data (Dado que no nos dieron un endpoint AJAX,
+        // usaré un truco sencillo para cargar la lista de clientes al inicio e indexarla en memoria)
+        
+        var clientsRepo = [];
+        
+        $(document).ready(function() {
+            // Cargar usuarios al inicio de la página para la lupa de búsqueda rápida
+            $.getJSON('/Admin/Api/Clients', function(data) {
+                clientsRepo = data;
+            });
+            calculateLoanLive(); // Primera corrida
+        });
+
+        $('#clientSearchInput').on('keyup', function() {
+            var term = $(this).val().toLowerCase();
+            if(term.length < 3) return; // Esperar 3 letras
+            
+            var result = clientsRepo.find(c => c.identityCard.toLowerCase().includes(term) || c.fullName.toLowerCase().includes(term));
+            
+            if(result) {
+                $('#hiddenClientId').val(result.id);
+                $('#clientNameShow').text(result.fullName + ' (' + result.identityCard + ')');
+                $('#searchBadge').removeClass('d-none');
+                $(this).prop('disabled', true);
+                $('#clientErrorMsg').text('');
+            }
+        });
+
+        function clearClient() {
+            $('#hiddenClientId').val('');
+            $('#clientSearchInput').val('').prop('disabled', false).focus();
+            $('#searchBadge').addClass('d-none');
+        }
+
+        // Antes de enviar el form, forzamos alerta si no eligió
+        $('form').on('submit', function(e) {
+            if(!$('#hiddenClientId').val()) {
+                e.preventDefault();
+                $('#clientErrorMsg').text('Por favor busque y seleccione un cliente activo de la base de datos.');
+            }
+        });
+    </script>
+}
