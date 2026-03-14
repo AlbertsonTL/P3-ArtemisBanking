@@ -111,7 +111,6 @@ public static class EmailTemplates
 
     /// <summary>
     /// Correo enviado al cliente cuando el admin actualiza la tasa de interés de su préstamo.
-    /// Cubre Issue #21 - Editar tasa de interés préstamo + recalcular cuotas + email.
     /// </summary>
     public static string LoanRateUpdated(
         string fullName,

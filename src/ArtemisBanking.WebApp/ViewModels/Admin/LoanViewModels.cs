@@ -50,7 +50,7 @@ public class AssignLoanViewModel
 }
 
 /// <summary>
-/// ViewModel para la pantalla de advertencia de alto riesgo (Issue #18).
+/// ViewModel para la pantalla de advertencia de alto riesgo
 /// Muestra mensaje de riesgo y datos del préstamo pendiente de confirmar.
 /// </summary>
 public class RiskWarningViewModel
@@ -70,7 +70,7 @@ public class RiskWarningViewModel
 }
 
 /// <summary>
-/// ViewModel para el formulario de edición de tasa de interés (Issue #21).
+/// ViewModel para el formulario de edición de tasa de interés.
 /// </summary>
 public class EditLoanRateViewModel
 {

@@ -15,14 +15,13 @@ using Xunit;
 namespace ArtemisBanking.Tests.Services;
 
 /// <summary>
-/// Issue #18 — Cálculo cuota francesa + validación alto riesgo.
 /// Cobertura mínima requerida: 2 casos de prueba del cálculo (criterio de aceptación).
 /// </summary>
 public class LoanServiceCalculationTests
 {
-    // ═════════════════════════════════════════════════════════════════════════
+    
     // Helpers: instanciar LoanService con mocks mínimos
-    // ═════════════════════════════════════════════════════════════════════════
+    
 
     private static LoanService BuildServiceWithContext(AppDbContext ctx)
     {
@@ -52,14 +51,10 @@ public class LoanServiceCalculationTests
         var store = new Mock<IUserStore<ApplicationUser>>();
         return new Mock<UserManager<ApplicationUser>>(
             store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
-    }
-
-    // ═════════════════════════════════════════════════════════════════════════
-    // ISSUE #18 — CalcularCuotaFrancesa
-    // ═════════════════════════════════════════════════════════════════════════
+    }    
 
     /// <summary>
-    /// Caso de prueba 1 (obligatorio Issue #18):
+    /// Caso de prueba 1 (obligatorio 18):
     /// Préstamo RD$ 100,000 a 12% anual por 12 meses.
     /// Resultado esperado calculado manualmente: RD$ 8,884.88
     /// Fórmula: C = 100000 × (0.01 × 1.01^12) / (1.01^12 − 1)
@@ -77,14 +72,13 @@ public class LoanServiceCalculationTests
         // Act
         decimal cuota = service.CalcularCuotaFrancesa(monto, tasa, meses);
 
-        // Assert — tolerancia de ±RD$ 1 por redondeo financiero
+        // Assert - tolerancia de ±RD$ 1 por redondeo financiero
         cuota.Should().BeApproximately(8_884.88m, 1.00m,
             because: "la fórmula francesa para 100k/12%/12m da aprox. 8884.88");
         cuota.Should().BeGreaterThan(0m);
     }
 
     /// <summary>
-    /// Caso de prueba 2 (obligatorio Issue #18):
     /// Préstamo RD$ 500,000 a 24% anual por 60 meses (5 años).
     /// Tasa mensual: 2%. Resultado esperado: RD$ 13,247.20 aprox.
     /// </summary>
@@ -130,11 +124,7 @@ public class LoanServiceCalculationTests
 
         act.Should().Throw<ArgumentException>()
            .WithParameterName("monto");
-    }
-
-    // ═════════════════════════════════════════════════════════════════════════
-    // ISSUE #18 — EsClienteAltoRiesgoAsync
-    // ═════════════════════════════════════════════════════════════════════════
+    }    
 
     /// <summary>
     /// Cliente sin deuda + nuevo préstamo pequeño NoRisk.

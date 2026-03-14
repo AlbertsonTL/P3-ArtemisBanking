@@ -13,7 +13,6 @@ namespace ArtemisBanking.Infrastructure.Services;
 
 /// <summary>
 /// Implementación del servicio de préstamos.
-/// Cubre Issues #18, #19 y #21.
 /// </summary>
 public class LoanService : ILoanService
 {
@@ -40,11 +39,6 @@ public class LoanService : ILoanService
         _userManager     = userManager;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // ISSUE #18 — Cálculo cuota francesa + validación alto riesgo
-    // ═══════════════════════════════════════════════════════════════════════
-
-    /// <inheritdoc/>
     public decimal CalcularCuotaFrancesa(decimal monto, decimal tasaAnual, int meses)
     {
         if (monto <= 0)   throw new ArgumentException("El monto debe ser mayor a cero.", nameof(monto));
@@ -75,7 +69,7 @@ public class LoanService : ILoanService
         decimal tasaAnual,
         int meses)
     {
-        // ── 1. Deuda actual del cliente (cuotas pendientes en todos sus préstamos) ──
+        // 1. Deuda actual del cliente
         var entradasCliente = await _entryRepo.Query()
             .Include(e => e.Loan)
             .Where(e => e.Loan.ClientId == clienteId && !e.IsPaid)
@@ -83,7 +77,7 @@ public class LoanService : ILoanService
 
         decimal deudaActual = entradasCliente.Sum(e => e.QuotaAmount);
 
-        // ── 2. Promedio de deuda del sistema ─────────────────────────────────────
+        // 2. Promedio de deuda del sistema
         //    = total de cuotas pendientes de TODOS los clientes / número de clientes con préstamos activos
         var todasLasEntradas = await _entryRepo.Query()
             .Include(e => e.Loan)
@@ -103,11 +97,11 @@ public class LoanService : ILoanService
             ? totalDeudaSistema / cantidadClientes
             : 0m;
 
-        // ── 3. Total que generará el nuevo préstamo (capital + intereses) ─────────
+        // 3. Total que generará el nuevo préstamo (capital + intereses)
         decimal cuotaNueva      = CalcularCuotaFrancesa(nuevoCapital, tasaAnual, meses);
         decimal totalNuevoPrest = cuotaNueva * meses;
 
-        // ── 4. Evaluación de riesgo ───────────────────────────────────────────────
+        // 4. Evaluación de riesgo
         if (deudaActual > promedioSistema)
         {
             return new RiskAssessmentResult
@@ -142,14 +136,9 @@ public class LoanService : ILoanService
         };
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // ISSUE #19 — Generación tabla amortización + acreditar cuenta + email
-    // ═══════════════════════════════════════════════════════════════════════
-
-    /// <inheritdoc/>
     public async Task AssignLoanAsync(CreateLoanDto dto, string adminId)
     {
-        // ── Validaciones previas ──────────────────────────────────────────────────
+        //  Validaciones previas
         var client = await _userManager.FindByIdAsync(dto.ClientId)
             ?? throw new InvalidOperationException("Cliente no encontrado.");
 
@@ -157,10 +146,10 @@ public class LoanService : ILoanService
             s => s.ClientId == dto.ClientId && s.AccountType == AccountType.Main && s.IsActive)
             ?? throw new InvalidOperationException("El cliente no posee una cuenta principal activa.");
 
-        // ── 1. Calcular cuota mensual (Sistema Francés, con decimal) ──────────────
+        //  1. Calcular cuota mensual (Sistema Francés, con decimal) 
         decimal cuotaMensual = CalcularCuotaFrancesa(dto.Amount, dto.AnnualInterestRate, dto.TermMonths);
 
-        // ── 2. Construir entidad Préstamo ─────────────────────────────────────────
+        //  2. Construir entidad Préstamo
         var loan = new Loan
         {
             LoanNumber        = AccountNumberGenerator.Generate9Digits(),
@@ -174,7 +163,7 @@ public class LoanService : ILoanService
             AdminId           = adminId
         };
 
-        // ── 3. Generar tabla de amortización ──────────────────────────────────────
+        //  3. Generar tabla de amortización 
         //    Primera cuota: mismo día del mes siguiente a la creación.
         //    Cuotas siguientes: mes a mes hasta completar n cuotas.
         var fechaBase = loan.CreatedAt;
@@ -189,10 +178,10 @@ public class LoanService : ILoanService
             });
         }
 
-        // ── 4. Acreditar monto a la cuenta principal ──────────────────────────────
+        //  4. Acreditar monto a la cuenta principal 
         mainAccount.Balance += dto.Amount;
 
-        // ── 5. Registrar transacción de crédito (LoanDisbursement) ────────────────
+        //  5. Registrar transacción de crédito (LoanDisbursement) 
         //    Usamos el LoanNumber como origen (generado antes del SaveChanges).
         var transaction = new Transaction
         {
@@ -206,7 +195,7 @@ public class LoanService : ILoanService
             SavingsAccountId = mainAccount.Id
         };
 
-        // ── 6. Persistir todo de forma atómica ────────────────────────────────────
+        //  6. Persistir todo de forma atómica 
         //    EF Core comparte el mismo DbContext por scope, así que un único
         //    SaveChanges abarca loan + entries + account update + transaction.
         await _loanRepo.AddAsync(loan);
@@ -214,7 +203,7 @@ public class LoanService : ILoanService
         await _transactionRepo.AddAsync(transaction);
         await _loanRepo.SaveChangesAsync(); // persiste todo en una sola transacción DB
 
-        // ── 7. Enviar correo de confirmación al cliente ───────────────────────────
+        //  7. Enviar correo de confirmación al cliente
         //    Fuera de la transacción DB; si falla el correo el préstamo ya está guardado.
         try
         {
@@ -240,14 +229,10 @@ public class LoanService : ILoanService
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // ISSUE #21 — Editar tasa de interés + recalcular cuotas + email
-    // ═══════════════════════════════════════════════════════════════════════
-
     /// <inheritdoc/>
     public async Task UpdateInterestRateAsync(int loanId, decimal nuevaTasaAnual)
     {
-        // ── 1. Cargar préstamo ────────────────────────────────────────────────────
+        //  1. Cargar préstamo─
         var loan = await _loanRepo.Query()
             .Include(l => l.Client)
             .Include(l => l.AmortizationEntries)
@@ -257,7 +242,7 @@ public class LoanService : ILoanService
         if (!loan.IsActive)
             throw new InvalidOperationException("No se puede modificar la tasa de un préstamo inactivo.");
 
-        // ── 2. Obtener cuotas futuras pendientes ──────────────────────────────────
+        //  2. Obtener cuotas futuras pendientes 
         //    FechaPago > hoy  AND  IsPaid = false
         var hoy = DateTime.UtcNow.Date;
         var cuotasFuturas = loan.AmortizationEntries
@@ -271,7 +256,7 @@ public class LoanService : ILoanService
         int    n                = cuotasFuturas.Count;
         decimal tasaViejaAnual  = loan.AnnualInterestRate;
 
-        // ── 3. Calcular capital restante (principal pendiente) ────────────────────
+        //  3. Calcular capital restante (principal pendiente) 
         //    Usando la fórmula de valor presente de la anualidad con la tasa VIEJA:
         //      P = cuota_vieja × (1 − (1+r)^−n) / r
         //    Esto es matemáticamente correcto: nos da el saldo de capital sin intereses.
@@ -289,24 +274,24 @@ public class LoanService : ILoanService
             principalRestante = cuotaVieja * factorVP / rVieja;
         }
 
-        // ── 4. Recalcular nueva cuota con capital restante y nueva tasa ───────────
+        //  4. Recalcular nueva cuota con capital restante y nueva tasa
         decimal nuevaCuota = CalcularCuotaFrancesa(principalRestante, nuevaTasaAnual, n);
 
-        // ── 5. Actualizar cuotas futuras pendientes ───────────────────────────────
+        //  5. Actualizar cuotas futuras pendientes
         foreach (var entrada in cuotasFuturas)
         {
             entrada.QuotaAmount = nuevaCuota;
             _entryRepo.Update(entrada);
         }
 
-        // ── 6. Actualizar tasa y cuota mensual en el préstamo ─────────────────────
+        //  6. Actualizar tasa y cuota mensual en el préstamo
         loan.AnnualInterestRate = nuevaTasaAnual;
         loan.MonthlyPayment     = nuevaCuota;
         _loanRepo.Update(loan);
 
         await _loanRepo.SaveChangesAsync();
 
-        // ── 7. Enviar correo al cliente ───────────────────────────────────────────
+        //  7. Enviar correo al cliente
         var proximaFecha = cuotasFuturas.First().PaymentDate;
         try
         {

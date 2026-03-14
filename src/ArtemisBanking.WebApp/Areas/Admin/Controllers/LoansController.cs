@@ -36,8 +36,6 @@ public class LoansController : Controller
         _userManager       = userManager;
     }
 
-    // ── INDEX ─────────────────────────────────────────────────────────────────
-
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -65,15 +63,10 @@ public class LoansController : Controller
         return View(model);
     }
 
-    // ── ASSIGN ────────────────────────────────────────────────────────────────
-
+    // ASSIGN 
     [HttpGet]
     public IActionResult Assign() => View(new AssignLoanViewModel());
 
-    /// <summary>
-    /// Issue #18: evalúa riesgo antes de guardar.
-    /// Issue #19: si no hay riesgo, asigna directamente.
-    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Assign(AssignLoanViewModel model)
@@ -96,7 +89,7 @@ public class LoansController : Controller
             return View(model);
         }
 
-        // Issue #18 — Validación alto riesgo
+        // Validación alto riesgo
         var risk = await _loanService.EsClienteAltoRiesgoAsync(
             model.ClientId, model.Amount, model.AnnualInterestRate, model.TermMonths);
 
@@ -128,9 +121,11 @@ public class LoansController : Controller
         return await DoAssignLoan(model.ClientId, model.Amount, model.AnnualInterestRate, model.TermMonths);
     }
 
-    // ── RISK WARNING CONFIRM / CANCEL ─────────────────────────────────────────
+    // RISK WARNING CONFIRM / CANCEL 
 
-    /// <summary>Issue #18: admin confirma préstamo de alto riesgo Issue #19: lo asigna.</summary>
+    /// <summary>
+    /// Admin confirma préstamo de alto riesgo 
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ConfirmAssign()
@@ -161,7 +156,7 @@ public class LoansController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // ── EDIT RATE — Issue #21 ─────────────────────────────────────────────────
+    // EDIT RATE
 
     [HttpGet]
     public async Task<IActionResult> EditRate(int id)
@@ -207,8 +202,7 @@ public class LoansController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // ── HELPER ────────────────────────────────────────────────────────────────
-
+    // HELPER 
     private async Task<IActionResult> DoAssignLoan(string clienteId, decimal amount, decimal rate, int months)
     {
         var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
