@@ -1,5 +1,8 @@
 using System.Security.Claims;
+using System.Text.Json;
+using ArtemisBanking.Application.DTOs.Loan;
 using ArtemisBanking.Application.Interfaces.Repositories;
+using ArtemisBanking.Application.Interfaces.Services;
 using ArtemisBanking.Domain.Entities;
 using ArtemisBanking.Domain.Enums;
 using ArtemisBanking.WebApp.ViewModels.Admin;
@@ -14,66 +17,69 @@ namespace ArtemisBanking.WebApp.Areas.Admin.Controllers;
 [Authorize(Roles = "Admin")]
 public class LoansController : Controller
 {
-    private readonly IGenericRepository<Loan, int> _loanRepository;
+    private readonly ILoanService                            _loanService;
+    private readonly IGenericRepository<Loan, int>           _loanRepository;
     private readonly IGenericRepository<SavingsAccount, int> _savingsRepository;
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly UserManager<ApplicationUser>            _userManager;
+
+    private const string PendingLoanKey = "PendingLoanDto";
 
     public LoansController(
-        IGenericRepository<Loan, int> loanRepository,
-        IGenericRepository<SavingsAccount, int> savingsRepository,
-        UserManager<ApplicationUser> userManager)
+        ILoanService                             loanService,
+        IGenericRepository<Loan, int>            loanRepository,
+        IGenericRepository<SavingsAccount, int>  savingsRepository,
+        UserManager<ApplicationUser>             userManager)
     {
-        _loanRepository = loanRepository;
+        _loanService       = loanService;
+        _loanRepository    = loanRepository;
         _savingsRepository = savingsRepository;
-        _userManager = userManager;
+        _userManager       = userManager;
     }
+
+    // ── INDEX ─────────────────────────────────────────────────────────────────
 
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        // 1. Obtener préstamos con sus clientes y tabla de amortización para calcular deuda
-        var query = _loanRepository.Query()
+        var loans = await _loanRepository.Query()
             .Include(l => l.Client)
-            .Include(l => l.AmortizationEntries);
-            
-        var loans = await query.ToListAsync();
+            .Include(l => l.AmortizationEntries)
+            .OrderByDescending(l => l.CreatedAt)
+            .ToListAsync();
 
         var model = loans.Select(l => new LoanListViewModel
         {
-            Id = l.Id,
-            LoanNumber = l.LoanNumber,
-            ClientName = $"{l.Client.FirstName} {l.Client.LastName}",
-            IdentityCard = l.Client.IdentityCard,
-            Amount = l.Amount,
+            Id                 = l.Id,
+            LoanNumber         = l.LoanNumber,
+            ClientName         = $"{l.Client.FirstName} {l.Client.LastName}",
+            IdentityCard       = l.Client.IdentityCard,
+            Amount             = l.Amount,
             AnnualInterestRate = l.AnnualInterestRate,
-            TermMonths = l.TermMonths,
-            MonthlyPayment = l.MonthlyPayment,
-            IsActive = l.IsActive,
-            CreatedAt = l.CreatedAt,
-            // Suma de Cuotas (QuotaAmount) pendientes en la tabla de amortización
-            RemainingDebt = l.AmortizationEntries
-                             .Where(e => !e.IsPaid)
-                             .Sum(e => e.QuotaAmount)
-        }).OrderByDescending(l => l.CreatedAt).ToList();
+            TermMonths         = l.TermMonths,
+            MonthlyPayment     = l.MonthlyPayment,
+            IsActive           = l.IsActive,
+            CreatedAt          = l.CreatedAt,
+            RemainingDebt      = l.AmortizationEntries.Where(e => !e.IsPaid).Sum(e => e.QuotaAmount)
+        }).ToList();
 
         return View(model);
     }
+
+    // ── ASSIGN ────────────────────────────────────────────────────────────────
 
     [HttpGet]
-    public IActionResult Assign()
-    {
-        var model = new AssignLoanViewModel();
-        return View(model);
-    }
+    public IActionResult Assign() => View(new AssignLoanViewModel());
 
+    /// <summary>
+    /// Issue #18: evalúa riesgo antes de guardar.
+    /// Issue #19: si no hay riesgo, asigna directamente.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Assign(AssignLoanViewModel model)
     {
         if (!ModelState.IsValid)
-        {
             return View(model);
-        }
 
         var client = await _userManager.FindByIdAsync(model.ClientId);
         if (client == null || client.Role != UserRole.Cliente || !client.IsActive)
@@ -82,68 +88,149 @@ public class LoansController : Controller
             return View(model);
         }
 
-        // Buscar cuenta principal para desembolsar el monto
-        var mainAccount = await _savingsRepository.FirstOrDefaultAsync(s => s.ClientId == client.Id && s.AccountType == AccountType.Main);
+        var mainAccount = await _savingsRepository.FirstOrDefaultAsync(
+            s => s.ClientId == client.Id && s.AccountType == AccountType.Main && s.IsActive);
         if (mainAccount == null)
         {
-            TempData["Error"] = "El cliente no posee una Cuenta de Ahorro Principal. No se puede desembolsar el préstamo.";
+            TempData["Error"] = "El cliente no posee una Cuenta de Ahorro Principal activa.";
             return View(model);
         }
 
-        // 1. Calcular Cuota Fija (Sistema Francés)
-        double r = (double)(model.AnnualInterestRate / 100m / 12m); // Tasa mensual decimal
-        int n = model.TermMonths;
-        double p = (double)model.Amount;
-        
-        double cuotaFija = 0;
-        if (r > 0)
-        {
-            cuotaFija = p * r / (1 - Math.Pow(1 + r, -n));
-        }
-        else
-        {
-            cuotaFija = p / n; // En caso de que la tasa sea 0%
-        }
+        // Issue #18 — Validación alto riesgo
+        var risk = await _loanService.EsClienteAltoRiesgoAsync(
+            model.ClientId, model.Amount, model.AnnualInterestRate, model.TermMonths);
 
-        decimal montlyPayment = Math.Round((decimal)cuotaFija, 2);
-
-        // 2. Crear Préstamo
-        var adminId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
-        var loan = new Loan
+        if (risk.TieneRiesgo)
         {
-            LoanNumber = ArtemisBanking.Shared.Helpers.AccountNumberGenerator.Generate9Digits(),
-            Amount = model.Amount,
-            AnnualInterestRate = model.AnnualInterestRate,
-            TermMonths = model.TermMonths,
-            MonthlyPayment = montlyPayment,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-            ClientId = client.Id,
-            AdminId = adminId!
-        };
-
-        // 3. Generar Tabla de Amortización Mensual
-        for (int i = 1; i <= n; i++)
-        {
-            loan.AmortizationEntries.Add(new AmortizationEntry
+            // Serializar datos del préstamo para recuperarlos tras confirmación
+            TempData[PendingLoanKey] = JsonSerializer.Serialize(new CreateLoanDto
             {
-                PaymentDate = DateTime.UtcNow.AddMonths(i),
-                QuotaAmount = montlyPayment,
-                IsPaid = false,
-                IsLate = false
+                ClientId           = model.ClientId,
+                Amount             = model.Amount,
+                AnnualInterestRate = model.AnnualInterestRate,
+                TermMonths         = model.TermMonths
+            });
+
+            return View("RiskWarning", new RiskWarningViewModel
+            {
+                ClientId            = model.ClientId,
+                ClientName          = $"{client.FirstName} {client.LastName}",
+                Amount              = model.Amount,
+                AnnualInterestRate  = model.AnnualInterestRate,
+                TermMonths          = model.TermMonths,
+                RiskMessage         = risk.Message,
+                DeudaActualCliente  = risk.DeudaActualCliente,
+                PromedioSistema     = risk.PromedioSistema,
+                TotalNuevoPrestamo  = risk.TotalNuevoPrestamo
             });
         }
 
-        // 4. Desembolsar en Cuenta Principal
-        mainAccount.Balance += model.Amount;
+        return await DoAssignLoan(model.ClientId, model.Amount, model.AnnualInterestRate, model.TermMonths);
+    }
 
-        // 5. Guardar en Base de Datos (Transacción Implícita de EF)
-        await _loanRepository.AddAsync(loan);
-        _savingsRepository.Update(mainAccount);
-        await _loanRepository.SaveChangesAsync();
-        await _savingsRepository.SaveChangesAsync();
+    // ── RISK WARNING CONFIRM / CANCEL ─────────────────────────────────────────
 
-        TempData["Success"] = $"Préstamo de RD$ {model.Amount:N2} aprobado y desembolsado con éxito a la cuenta del titular. Cuota: RD$ {montlyPayment:N2}";
+    /// <summary>Issue #18: admin confirma préstamo de alto riesgo Issue #19: lo asigna.</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmAssign()
+    {
+        var json = TempData[PendingLoanKey] as string;
+        if (string.IsNullOrEmpty(json))
+        {
+            TempData["Error"] = "Sesión expirada. Intente nuevamente.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var dto = JsonSerializer.Deserialize<CreateLoanDto>(json);
+        if (dto is null)
+        {
+            TempData["Error"] = "Error al recuperar datos del préstamo.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        return await DoAssignLoan(dto.ClientId, dto.Amount, dto.AnnualInterestRate, dto.TermMonths);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult CancelAssign()
+    {
+        TempData.Remove(PendingLoanKey);
+        TempData["Info"] = "Asignación de préstamo cancelada.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    // ── EDIT RATE — Issue #21 ─────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> EditRate(int id)
+    {
+        var loan = await _loanRepository.Query()
+            .Include(l => l.Client)
+            .Include(l => l.AmortizationEntries)
+            .FirstOrDefaultAsync(l => l.Id == id);
+
+        if (loan is null) { TempData["Error"] = "Préstamo no encontrado."; return RedirectToAction(nameof(Index)); }
+        if (!loan.IsActive) { TempData["Error"] = "No se puede modificar un préstamo inactivo."; return RedirectToAction(nameof(Index)); }
+
+        var hoy = DateTime.UtcNow.Date;
+        return View(new EditLoanRateViewModel
+        {
+            LoanId                = loan.Id,
+            LoanNumber            = loan.LoanNumber,
+            ClientName            = $"{loan.Client.FirstName} {loan.Client.LastName}",
+            CurrentRate           = loan.AnnualInterestRate,
+            CurrentMonthly        = loan.MonthlyPayment,
+            RemainingQuotas       = loan.AmortizationEntries.Count(e => e.PaymentDate.Date > hoy && !e.IsPaid),
+            NewAnnualInterestRate = loan.AnnualInterestRate   // precargado
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditRate(EditLoanRateViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        try
+        {
+            await _loanService.UpdateInterestRateAsync(model.LoanId, model.NewAnnualInterestRate);
+            TempData["Success"] = $"Tasa actualizada a {model.NewAnnualInterestRate:N2}%. Cuotas futuras recalculadas y cliente notificado.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    // ── HELPER ────────────────────────────────────────────────────────────────
+
+    private async Task<IActionResult> DoAssignLoan(string clienteId, decimal amount, decimal rate, int months)
+    {
+        var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        try
+        {
+            await _loanService.AssignLoanAsync(new CreateLoanDto
+            {
+                ClientId           = clienteId,
+                AdminId            = adminId,
+                Amount             = amount,
+                AnnualInterestRate = rate,
+                TermMonths         = months
+            }, adminId);
+
+            decimal cuota = _loanService.CalcularCuotaFrancesa(amount, rate, months);
+            TempData["Success"] = $"Préstamo de RD$ {amount:N2} aprobado y desembolsado exitosamente. Cuota mensual: RD$ {cuota:N2}";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error al procesar el préstamo: {ex.Message}";
+        }
+
         return RedirectToAction(nameof(Index));
     }
 }
