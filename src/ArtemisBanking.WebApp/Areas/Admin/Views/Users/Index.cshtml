@@ -125,5 +125,36 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- Paginación Manual -->
+        @if (ViewBag.TotalPages > 1)
+        {
+            var currentPage = (int)ViewBag.CurrentPage;
+            var totalPages = (int)ViewBag.TotalPages;
+
+            <div class="card-footer bg-white border-0 py-3">
+                <nav aria-label="Navegación de Usuarios">
+                    <ul class="pagination pagination-sm justify-content-end mb-0">
+                        <!-- Anterior -->
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link rounded-start-pill px-3" asp-action="Index" asp-route-filterRole="@currentFilter" asp-route-pg="@(currentPage - 1)">Ant</a>
+                        </li>
+                        
+                        <!-- Páginas -->
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-filterRole="@currentFilter" asp-route-pg="@i">@i</a>
+                            </li>
+                        }
+
+                        <!-- Siguiente -->
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link rounded-end-pill px-3" asp-action="Index" asp-route-filterRole="@currentFilter" asp-route-pg="@(currentPage + 1)">Sig</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
     </div>
 </div>

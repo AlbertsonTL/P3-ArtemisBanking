@@ -197,4 +197,51 @@ public static class EmailTemplates
   </div>
 </body>
 </html>";
+
+    public static string TransactionNotification(string fullName, string concept, decimal amount, string target) => $@"
+<!DOCTYPE html>
+<html>
+<head><meta charset='utf-8'>
+  <style>
+    body {{ font-family:Arial,sans-serif; background:#f4f4f4; }}
+    .container {{ max-width:600px; margin:40px auto; background:#fff;
+                  border-radius:8px; overflow:hidden; }}
+    .header {{ background:#1a3c5e; padding:30px; text-align:center; }}
+    .header h1 {{ color:#fff; margin:0; font-size:22px; }}
+    .body {{ padding:30px; color:#333; line-height:1.6; }}
+    .amount-box {{ text-align:center; padding:20px; background:#f8fafc; border-radius:10px; margin:20px 0; }}
+    .amount {{ font-size:32px; font-weight:bold; color:#1a3c5e; }}
+    .details {{ width:100%; border-collapse:collapse; margin:15px 0; }}
+    .details td {{ padding:10px; border-bottom:1px solid #eee; }}
+    .details td:first-child {{ font-weight:bold; color:#555; width:40%; }}
+    .footer {{ background:#f0f0f0; padding:15px; text-align:center;
+                font-size:12px; color:#888; }}
+  </style>
+</head>
+<body>
+  <div class='container'>
+    <div class='header'><h1>Notificación de Transacción 🔔</h1></div>
+    <div class='body'>
+      <p>Hola <strong>{fullName}</strong>,</p>
+      <p>Se ha procesado una transacción en tu cuenta:</p>
+      
+      <div class='amount-box'>
+        <div class='amount'>RD$ {amount:N2}</div>
+        <div class='text-muted small'>{concept}</div>
+      </div>
+
+      <table class='details'>
+        <tr><td>Concepto</td><td>{concept}</td></tr>
+        <tr><td>Destino/Origen</td><td>{target}</td></tr>
+        <tr><td>Fecha</td><td>{DateTime.UtcNow:dd/MM/yyyy HH:mm}</td></tr>
+      </table>
+
+      <p>Si no reconoces esta actividad, por favor contáctanos de inmediato.</p>
+      <p>Atentamente,<br><strong>Equipo Artemis Banking</strong></p>
+    </div>
+    <div class='footer'>© 2025 Artemis Banking. Todos los derechos reservados.</div>
+  </div>
+</body>
+</html>";
+
 }

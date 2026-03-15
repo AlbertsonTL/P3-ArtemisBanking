@@ -1,0 +1,104 @@
+@{
+    ViewData["Title"] = "Centro de Pagos y Transferencias";
+}
+
+<div class="row mb-5">
+    <div class="col-12 text-center">
+        <h2 class="fw-bold text-slate-800 mb-2">¿Qué deseas hacer hoy?</h2>
+        <p class="text-muted">Selecciona el tipo de transacción que deseas realizar.</p>
+    </div>
+</div>
+
+<div class="row g-4 justify-content-center">
+    <!-- Transferencias -->
+    <div class="col-12 mb-2">
+        <h5 class="fw-bold text-slate-500 text-uppercase small tracking-widest mb-3">Transferencias</h5>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="OwnAccounts" class="card h-100 text-decoration-none border-0 shadow-sm hover-lift translate-y-n2">
+            <div class="card-body p-4 text-center">
+                <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="fas fa-random fs-4"></i>
+                </div>
+                <h5 class="fw-bold text-slate-800 mb-2">Entre Cuentas</h5>
+                <p class="text-muted small mb-0">Transfiere dinero entre tus propias cuentas de ahorro Artemis.</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="Beneficiaries" class="card h-100 text-decoration-none border-0 shadow-sm hover-lift translate-y-n2">
+            <div class="card-body p-4 text-center">
+                <div class="bg-info-subtle text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="fas fa-user-friends fs-4"></i>
+                </div>
+                <h5 class="fw-bold text-slate-800 mb-2">A Beneficiarios</h5>
+                <p class="text-muted small mb-0">Envía dinero a tus contactos guardados rápidamente.</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="Express" class="card h-100 text-decoration-none border-0 shadow-sm hover-lift translate-y-n2">
+            <div class="card-body p-4 text-center">
+                <div class="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="fas fa-bolt fs-4"></i>
+                </div>
+                <h5 class="fw-bold text-slate-800 mb-2">Express</h5>
+                <p class="text-muted small mb-0">Transfiere a cualquier cuenta Artemis ingresando el número.</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- Pagos y Avances -->
+    <div class="col-12 mt-5 mb-2">
+        <h5 class="fw-bold text-slate-500 text-uppercase small tracking-widest mb-3">Pagos y Avances</h5>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="PayCreditCard" class="card h-100 text-decoration-none border-0 shadow-sm hover-lift translate-y-n2">
+            <div class="card-body p-4 text-center">
+                <div class="bg-danger-subtle text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="fas fa-credit-card fs-4"></i>
+                </div>
+                <h5 class="fw-bold text-slate-800 mb-2">Pago de Tarjeta</h5>
+                <p class="text-muted small mb-0">Paga el balance de tus tarjetas de crédito desde tus cuentas.</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="PayLoan" class="card h-100 text-decoration-none border-0 shadow-sm hover-lift translate-y-n2">
+            <div class="card-body p-4 text-center">
+                <div class="bg-warning-subtle text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="fas fa-hand-holding-usd fs-4"></i>
+                </div>
+                <h5 class="fw-bold text-slate-800 mb-2">Pago de Préstamo</h5>
+                <p class="text-muted small mb-0">Realiza el pago de tus cuotas pendientes de préstamos.</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="CashAdvance" class="card h-100 text-decoration-none border-0 shadow-sm hover-lift translate-y-n2">
+            <div class="card-body p-4 text-center">
+                <div class="bg-dark-subtle text-dark rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="fas fa-money-bill-wave fs-4"></i>
+                </div>
+                <h5 class="fw-bold text-slate-800 mb-2">Avance de Efectivo</h5>
+                <p class="text-muted small mb-0">Retira fondos de tu tarjeta de crédito a tu cuenta de ahorros.</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<style>
+    .hover-lift {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important;
+    }
+</style>

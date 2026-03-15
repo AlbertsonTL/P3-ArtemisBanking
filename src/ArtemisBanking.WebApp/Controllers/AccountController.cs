@@ -198,16 +198,17 @@ public class AccountController : Controller
         {
             // Leer el rol del usuario actual desde los claims
             if (User.IsInRole("Admin")) return RedirectToAction("Index", "Home", new { area = "Admin" });
-            if (User.IsInRole("Cajero")) return RedirectToAction("Index", "Home", new { area = "Cajero" });
-            if (User.IsInRole("Cliente")) return RedirectToAction("Index", "Home", new { area = "Cliente" });
+            if (User.IsInRole("Cajero")) return RedirectToAction("Index", "Home", new { area = "Cashier" });
+            if (User.IsInRole("Cliente")) return RedirectToAction("Index", "Home", new { area = "Client" });
         }
 
         return role switch
         {
             UserRole.Admin => RedirectToAction("Index", "Home", new { area = "Admin" }),
-            UserRole.Cajero => RedirectToAction("Index", "Home", new { area = "Cajero" }),
-            UserRole.Cliente => RedirectToAction("Index", "Home", new { area = "Cliente" }),
+            UserRole.Cajero => RedirectToAction("Index", "Home", new { area = "Cashier" }),
+            UserRole.Cliente => RedirectToAction("Index", "Home", new { area = "Client" }),
             _ => RedirectToAction(nameof(Login))
         };
+
     }
 }

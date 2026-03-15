@@ -37,13 +37,19 @@ public class LoansController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string searchCedula, string filterState)
     {
-        var loans = await _loanRepository.Query()
+        var query = _loanRepository.Query()
             .Include(l => l.Client)
             .Include(l => l.AmortizationEntries)
-            .OrderByDescending(l => l.CreatedAt)
-            .ToListAsync();
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(searchCedula))
+        {
+            query = query.Where(l => l.Client.IdentityCard.Contains(searchCedula));
+        }
+
+        var loans = await query.OrderByDescending(l => l.CreatedAt).ToListAsync();
 
         var model = loans.Select(l => new LoanListViewModel
         {
@@ -59,6 +65,26 @@ public class LoansController : Controller
             CreatedAt          = l.CreatedAt,
             RemainingDebt      = l.AmortizationEntries.Where(e => !e.IsPaid).Sum(e => e.QuotaAmount)
         }).ToList();
+
+        if (!string.IsNullOrEmpty(filterState))
+        {
+            if (filterState == "Pagado")
+            {
+                model = model.Where(l => l.RemainingDebt <= 0 && l.Amount > 0).ToList();
+            }
+            else if (filterState == "AlDia")
+            {
+                model = model.Where(l => l.IsActive && l.RemainingDebt > 0).ToList();
+            }
+            else if (filterState == "EnMora")
+            {
+                // En ArtemisBanking, asumiremos que si un préstamo no está activo y aún debe, está en mora según el HTML
+                model = model.Where(l => !l.IsActive && l.RemainingDebt > 0).ToList();
+            }
+        }
+
+        ViewBag.SearchCedula = searchCedula;
+        ViewBag.FilterState = filterState;
 
         return View(model);
     }

@@ -1,0 +1,72 @@
+@model List<BeneficiaryListViewModel>
+@{
+    ViewData["Title"] = "Mis Beneficiarios";
+}
+
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h2 class="fw-bold text-slate-800 mb-1">Mis Beneficiarios</h2>
+        <p class="text-muted mb-0">Gestiona las cuentas a las que transfieres con frecuencia.</p>
+    </div>
+    <div class="col-auto">
+        <a asp-action="Create" class="btn btn-primary d-flex align-items-center">
+            <i class="fas fa-plus me-2"></i> Nuevo Beneficiario
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-slate-50 border-bottom">
+                <tr>
+                    <th class="ps-4 py-3 text-slate-500 fw-bold small text-uppercase" style="width: 40%">Beneficiario</th>
+                    <th class="py-3 text-slate-500 fw-bold small text-uppercase">Número de Cuenta</th>
+                    <th class="py-3 text-slate-500 fw-bold small text-uppercase">Fecha Agregado</th>
+                    <th class="pe-4 py-3 text-end text-slate-500 fw-bold small text-uppercase">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <div class="text-slate-300 mb-3">
+                                <i class="fas fa-user-friends fs-1"></i>
+                            </div>
+                            <h6 class="text-slate-500 mb-0">No tienes beneficiarios agregados aún.</h6>
+                            <p class="text-muted small">Agrega uno para facilitar tus transferencias.</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var beneficiary in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 40px; height: 40px;">
+                                        @beneficiary.BeneficiaryName[0]
+                                    </div>
+                                    <div class="fw-semibold text-slate-700">@beneficiary.BeneficiaryName</div>
+                                </div>
+                            </td>
+                            <td class="py-3 font-monospace text-slate-600">@beneficiary.AccountNumber</td>
+                            <td class="py-3 text-slate-500 small">@beneficiary.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td class="pe-4 py-3 text-end">
+                                <form asp-action="Delete" asp-route-id="@beneficiary.Id" method="post" 
+                                      onsubmit="return confirm('¿Estás seguro de eliminar este beneficiario?');" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-link text-danger p-0 text-decoration-none small fw-bold">
+                                        <i class="fas fa-trash-alt me-1"></i> Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
