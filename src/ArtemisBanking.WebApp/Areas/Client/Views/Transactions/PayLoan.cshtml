@@ -1,0 +1,64 @@
+@model LoanPaymentViewModel
+@{
+    ViewData["Title"] = "Pago de Préstamo";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="mb-4">
+            <a asp-action="Index" class="text-slate-500 text-decoration-none small fw-bold">
+                <i class="fas fa-arrow-left me-1"></i> Volver al menú
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-white border-bottom-0 pt-4 px-4 text-center">
+                 <div class="bg-warning-subtle text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 50px; height: 50px;">
+                    <i class="fas fa-hand-holding-usd fs-4"></i>
+                </div>
+                <h4 class="fw-bold text-slate-800 mb-0">Pago de Préstamo</h4>
+                <p class="text-muted small">Paga tus cuotas pendientes de forma secuencial.</p>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="PayLoan" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <div class="mb-4">
+                        <label asp-for="LoanId" class="form-label fw-bold small text-slate-600"></label>
+                        <select asp-for="LoanId" asp-items="Model.MyLoans" class="form-select">
+                            <option value="">-- Seleccione préstamo --</option>
+                        </select>
+                        <span asp-validation-for="LoanId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="SourceAccountNumber" class="form-label fw-bold small text-slate-600"></label>
+                        <select asp-for="SourceAccountNumber" asp-items="Model.MyAccounts" class="form-select">
+                            <option value="">-- Seleccione cuenta de origen --</option>
+                        </select>
+                        <span asp-validation-for="SourceAccountNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Amount" class="form-label fw-bold small text-slate-600"></label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-light border-end-0">RD$</span>
+                            <input asp-for="Amount" class="form-control border-start-0 ps-0 fw-bold" placeholder="0.00" type="number" step="0.01" />
+                        </div>
+                        <span asp-validation-for="Amount" class="text-danger small"></span>
+                        <div class="form-text small">Nota: El sistema pagará las cuotas más antiguas primero. Todo sobrante que no complete una cuota será devuelto a su cuenta.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning text-dark w-100 py-3 fw-bold rounded-3 shadow-sm">
+                        Procesar Pago de Préstamo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

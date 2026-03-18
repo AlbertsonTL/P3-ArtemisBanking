@@ -1,0 +1,169 @@
+@model ClientHomeViewModel
+@{
+    ViewData["Title"] = "Resumen de Productos";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold text-slate-800">Hola, @User.Identity?.Name!</h2>
+        <p class="text-muted">Aquí tienes un vistazo rápido a tus finanzas hoy.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Cuentas de Ahorro -->
+    <div class="col-12 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+            <h5 class="fw-bold mb-0 text-slate-700">
+                <i class="fas fa-piggy-bank text-primary me-2"></i> Mis Cuentas de Ahorro
+            </h5>
+            <span class="badge bg-primary rounded-pill">@Model.SavingsAccounts.Count</span>
+        </div>
+        <div class="row g-4">
+            @foreach (var account in Model.SavingsAccounts)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-top-0 border-end-0 border-bottom-0 border-start border-4 @(account.AccountType == AccountType.Main ? "border-primary" : "border-info")">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="text-muted small fw-bold font-monospace">@account.AccountNumber</span>
+                                <span class="badge @(account.AccountType == AccountType.Main ? "bg-primary-subtle text-primary" : "bg-info-subtle text-info") border-0 px-2 py-1 small">
+                                    @(account.AccountType == AccountType.Main ? "Principal" : "Secundaria")
+                                </span>
+                            </div>
+                            <h3 class="fw-bold mb-1">RD$ @account.Balance.ToString("N2")</h3>
+                            <p class="text-muted small mb-0">Balance Disponible</p>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 px-4 pb-4 pt-0">
+                            <a asp-action="SavingsDetails" asp-route-id="@account.Id" class="btn btn-light btn-sm w-100 rounded-pill fw-semibold text-slate-600">Ver Movimientos</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Tarjetas de Crédito -->
+    <div class="col-12 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+            <h5 class="fw-bold mb-0 text-slate-700">
+                <i class="fas fa-credit-card text-danger me-2"></i> Mis Tarjetas de Crédito
+            </h5>
+            <span class="badge bg-danger rounded-pill">@Model.CreditCards.Count</span>
+        </div>
+        <div class="row g-4">
+            @foreach (var card in Model.CreditCards)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 bg-slate-900 border-0 text-white shadow-lg overflow-hidden position-relative" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                        <div class="card-body p-4 z-1">
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                                <i class="fas fa-microchip text-warning fs-3 opacity-75"></i>
+                                <i class="fab fa-cc-visa fs-2 opacity-50"></i>
+                            </div>
+                            <div class="mb-4">
+                                <h5 class="font-monospace tracking-widest mb-1">**** **** **** @card.CardNumber.Substring(card.CardNumber.Length - 4)</h5>
+                                <div class="d-flex gap-3 mt-1">
+                                    <span class="text-slate-400 small text-uppercase" style="font-size: 0.65rem;">VENCE: @card.ExpirationDate</span>
+                                    <span class="text-slate-400 small text-uppercase" style="font-size: 0.65rem;">HOLDER: @User.Identity?.Name</span>
+                                </div>
+                            </div>
+                            <div class="row pt-2 border-top border-secondary border-opacity-25">
+                                <div class="col-6">
+                                    <p class="text-slate-400 small mb-0" style="font-size: 0.65rem;">DEUDA ACTUAL</p>
+                                    <h6 class="fw-bold mb-0">RD$ @card.DebtAmount.ToString("N2")</h6>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <p class="text-slate-400 small mb-0" style="font-size: 0.65rem;">CRÉDITO DISPO</p>
+                                    <h6 class="mb-0 fw-bold text-success">RD$ @((card.CreditLimit - card.DebtAmount).ToString("N2"))</h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer border-0 p-0 z-1">
+                            <a asp-action="CardDetails" asp-route-id="@card.Id" class="btn btn-link text-white text-decoration-none w-100 py-2 small opacity-75 hover-opacity-100" style="background: rgba(255,255,255,0.05); font-size: 0.75rem;">
+                                Detalles de Consumos <i class="fas fa-chevron-right ms-1" style="font-size: 0.6rem;"></i>
+                            </a>
+                        </div>
+                        <!-- Decorative element -->
+                        <div class="position-absolute bottom-0 end-0 opacity-10" style="transform: translate(20%, 20%);">
+                             <i class="fas fa-university" style="font-size: 150px;"></i>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (!Model.CreditCards.Any())
+            {
+                <div class="col-12">
+                    <div class="card bg-slate-100 border-0">
+                        <div class="card-body text-center py-5">
+                            <div class="text-slate-300 mb-2"><i class="fas fa-credit-card fs-1"></i></div>
+                            <p class="text-muted mb-0">No tienes tarjetas de crédito activas.</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Préstamos -->
+    <div class="col-12 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+            <h5 class="fw-bold mb-0 text-slate-700">
+                <i class="fas fa-hand-holding-usd text-warning me-2"></i> Mis Préstamos Activos
+            </h5>
+            <span class="badge bg-warning text-dark rounded-pill">@Model.Loans.Count</span>
+        </div>
+        <div class="row g-4">
+            @foreach (var loan in Model.Loans)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <span class="text-slate-400 small fw-bold font-monospace"># @loan.LoanNumber</span>
+                                    <h6 class="fw-bold mt-1 mb-0">Préstamo Personal</h6>
+                                </div>
+                                <span class="badge bg-success-subtle text-success border-0 rounded-pill px-3 py-1 fw-bold" style="font-size: 0.65rem;">AL DÍA</span>
+                            </div>
+                            <div class="row mt-4 mb-3">
+                                <div class="col-6">
+                                    <p class="text-muted small mb-1" style="font-size: 0.7rem;">DEUDA TOTAL</p>
+                                    <h6 class="fw-bold text-slate-700">RD$ @loan.Amount.ToString("N2")</h6>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <p class="text-muted small mb-1" style="font-size: 0.7rem;">PRÓXIMA CUOTA</p>
+                                    <h6 class="fw-bold text-primary">RD$ @loan.MonthlyPayment.ToString("N2")</h6>
+                                </div>
+                            </div>
+                            <div class="p-2 bg-slate-50 rounded-3">
+                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                    <span>Tasa de Interés</span>
+                                    <span class="fw-semibold">@loan.AnnualInterestRate%</span>
+                                </div>
+                                <div class="d-flex justify-content-between small text-muted">
+                                    <span>Plazo Restante</span>
+                                    <span class="fw-semibold">@loan.TermMonths Meses</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 px-4 pb-4">
+                            <a asp-action="LoanDetails" asp-route-id="@loan.Id" class="btn btn-outline-primary btn-sm w-100 rounded-pill fw-bold">Ver Calendario de Pagos</a>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (!Model.Loans.Any())
+            {
+                <div class="col-12">
+                    <div class="card bg-slate-100 border-0">
+                        <div class="card-body text-center py-5">
+                            <div class="text-slate-300 mb-2"><i class="fas fa-hand-holding-usd fs-1"></i></div>
+                            <p class="text-muted mb-0">No tienes préstamos activos actualmente.</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

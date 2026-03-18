@@ -1,0 +1,60 @@
+@model AddBeneficiaryViewModel
+@{
+    ViewData["Title"] = "Agregar Beneficiario";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="mb-4">
+            <a asp-action="Index" class="text-slate-500 text-decoration-none small fw-bold">
+                <i class="fas fa-arrow-left me-1"></i> Volver al listado
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-lg">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                        <i class="fas fa-user-plus fs-3"></i>
+                    </div>
+                    <h3 class="fw-bold text-slate-800">Nuevo Beneficiario</h3>
+                    <p class="text-muted small">Ingresa el número de cuenta de la persona que deseas agregar.</p>
+                </div>
+
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <div class="mb-4">
+                        <label asp-for="AccountNumber" class="form-label text-slate-700 fw-semibold small"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 text-slate-400">
+                                <i class="fas fa-hashtag"></i>
+                            </span>
+                            <input asp-for="AccountNumber" class="form-control border-start-0 ps-0" placeholder="Ej. 123456789" maxlength="9" />
+                        </div>
+                        <span asp-validation-for="AccountNumber" class="text-danger small"></span>
+                        <div class="form-text small opacity-75">Solo cuentas de ahorro de Artemis Banking (9 dígitos).</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm">
+                        Confirmar y Agregar
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="mt-4 p-4 bg-primary-subtle rounded-4">
+            <div class="d-flex">
+                <i class="fas fa-info-circle text-primary fs-5 me-3"></i>
+                <p class="mb-0 small text-primary-emphasis">
+                    <strong>¿Sabías?</strong> Agregar un beneficiario te permite realizar transferencias recurrentes más rápido sin tener que ingresar el número de cuenta cada vez.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
