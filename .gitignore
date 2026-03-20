@@ -363,7 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Documentation files
-docs/
+docs/appsettings.json
 
 # Archivos comprimidos
 *.zip
