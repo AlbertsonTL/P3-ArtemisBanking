@@ -261,7 +261,9 @@ public class TransactionService : ITransactionService
             Amount = amount,
             Category = TransactionCategory.CashAdvance,
             Status = TransactionStatus.Approved,
-            Origin = card.CardNumber,
+            Origin = card.CardNumber.Length > 4 
+                ? card.CardNumber.Substring(card.CardNumber.Length - 4) 
+                : card.CardNumber,
             Beneficiary = destinationAccountNumber,
             SavingsAccountId = dest.Id,
             Date = DateTime.UtcNow
