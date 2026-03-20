@@ -78,7 +78,7 @@ public class TransactionService : ITransactionService
 
     public async Task<bool> TransferToBeneficiaryAsync(string senderClientId, string sourceAccountNumber, string destinationAccountNumber, decimal amount)
     {
-         return await ExpressTransactionAsync(senderClientId, sourceAccountNumber, destinationAccountNumber, amount);
+        return await ExpressTransactionAsync(senderClientId, sourceAccountNumber, destinationAccountNumber, amount);
     }
 
     public async Task<bool> ExpressTransactionAsync(string senderClientId, string sourceAccountNumber, string destinationAccountNumber, decimal amount)
@@ -120,13 +120,15 @@ public class TransactionService : ITransactionService
 
         await _savingsRepository.SaveChangesAsync();
 
-        await _emailService.SendAsync(new EmailRequestDto {
+        await _emailService.SendAsync(new EmailRequestDto
+        {
             To = source.Client.Email!,
             Subject = "Transferencia Enviada",
             Body = EmailTemplates.TransactionNotification($"{source.Client.FirstName} {source.Client.LastName}", "Debito por Transferencia", amount, destinationAccountNumber)
         });
 
-        await _emailService.SendAsync(new EmailRequestDto {
+        await _emailService.SendAsync(new EmailRequestDto
+        {
             To = dest.Client.Email!,
             Subject = "Transferencia Recibida",
             Body = EmailTemplates.TransactionNotification($"{dest.Client.FirstName} {dest.Client.LastName}", "Credito por Transferencia", amount, sourceAccountNumber)
@@ -165,7 +167,8 @@ public class TransactionService : ITransactionService
 
         await _savingsRepository.SaveChangesAsync();
 
-        await _emailService.SendAsync(new EmailRequestDto {
+        await _emailService.SendAsync(new EmailRequestDto
+        {
             To = card.Client.Email!,
             Subject = "Pago de Tarjeta de Crédito",
             Body = EmailTemplates.TransactionNotification($"{card.Client.FirstName} {card.Client.LastName}", "Pago Tarjeta", paymentAmount, card.CardNumber)
@@ -228,7 +231,8 @@ public class TransactionService : ITransactionService
 
         await _savingsRepository.SaveChangesAsync();
 
-        await _emailService.SendAsync(new EmailRequestDto {
+        await _emailService.SendAsync(new EmailRequestDto
+        {
             To = loan.Client.Email!,
             Subject = "Pago de Préstamo Realizado",
             Body = EmailTemplates.TransactionNotification($"{loan.Client.FirstName} {loan.Client.LastName}", "Pago Préstamo", paidTotal, loan.LoanNumber)
@@ -261,8 +265,8 @@ public class TransactionService : ITransactionService
             Amount = amount,
             Category = TransactionCategory.CashAdvance,
             Status = TransactionStatus.Approved,
-            Origin = card.CardNumber.Length > 4 
-                ? card.CardNumber.Substring(card.CardNumber.Length - 4) 
+            Origin = card.CardNumber.Length > 4
+                ? card.CardNumber.Substring(card.CardNumber.Length - 4)
                 : card.CardNumber,
             Beneficiary = destinationAccountNumber,
             SavingsAccountId = dest.Id,
@@ -280,7 +284,8 @@ public class TransactionService : ITransactionService
 
         await _cardRepository.SaveChangesAsync();
 
-        await _emailService.SendAsync(new EmailRequestDto {
+        await _emailService.SendAsync(new EmailRequestDto
+        {
             To = card.Client.Email!,
             Subject = "Avance de Efectivo realizado",
             Body = EmailTemplates.TransactionNotification($"{card.Client.FirstName} {card.Client.LastName}", "Avance de Efectivo", amount, card.CardNumber)
