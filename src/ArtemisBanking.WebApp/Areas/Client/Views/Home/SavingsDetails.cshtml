@@ -1,0 +1,66 @@
+@model List<ArtemisBanking.Domain.Entities.Transaction>
+@{
+    ViewData["Title"] = "Detalle de Cuenta";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-slate-500 text-decoration-none small fw-bold">
+        <i class="fas fa-arrow-left me-1"></i> Volver al dashboard
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-primary text-white p-4 h-100">
+            <p class="small text-uppercase fw-bold opacity-75 mb-1">Cuenta de Ahorros</p>
+            <h4 class="fw-bold font-monospace">@ViewBag.AccountNumber</h4>
+            <div class="mt-auto">
+                <p class="small text-uppercase fw-bold opacity-75 mb-0">Balance Disponible</p>
+                <h2 class="fw-bold mb-0">RD$ @ViewBag.Balance.ToString("N2")</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 px-4 border-bottom-0">
+        <h5 class="fw-bold text-slate-800 mb-0">Últimos Movimientos</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th class="ps-4 py-3 text-slate-500 fw-bold small text-uppercase">Fecha</th>
+                    <th class="py-3 text-slate-500 fw-bold small text-uppercase">Concepto</th>
+                    <th class="py-3 text-slate-500 fw-bold small text-uppercase">Origen/Destino</th>
+                    <th class="pe-4 py-3 text-end text-slate-500 fw-bold small text-uppercase">Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted small">No hay transacciones registradas para esta cuenta.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var t in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 py-3 text-slate-500 small">@t.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="py-3">
+                                <span class="fw-medium text-slate-700">@t.Category</span>
+                                <div class="text-muted small">@t.Type</div>
+                            </td>
+                            <td class="py-3 font-monospace small">@t.Beneficiary</td>
+                            <td class="pe-4 py-3 text-end fw-bold @(t.Type == TransactionType.Credit ? "text-success" : "text-danger")">
+                                @(t.Type == TransactionType.Credit ? "+" : "-") RD$ @t.Amount.ToString("N2")
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

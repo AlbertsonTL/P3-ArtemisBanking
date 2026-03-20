@@ -54,6 +54,10 @@ public static class ServiceRegistration
         // Servicio de Préstamos (Issues #18, #19, #21)
         services.AddScoped<ILoanService, LoanService>();
 
+        // Servicio de Transacciones (Dev 2 - Issues #28 a #33)
+        services.AddScoped<ITransactionService, TransactionService>();
+
         return services;
+
     }
 }

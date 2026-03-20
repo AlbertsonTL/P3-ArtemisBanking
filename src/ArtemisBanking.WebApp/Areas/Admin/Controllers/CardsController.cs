@@ -17,13 +17,16 @@ namespace ArtemisBanking.WebApp.Areas.Admin.Controllers;
 public class CardsController : Controller
 {
     private readonly IGenericRepository<CreditCard, int> _cardRepository;
+    private readonly IGenericRepository<CardConsumption, int> _consumptionRepository;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public CardsController(
         IGenericRepository<CreditCard, int> cardRepository,
+        IGenericRepository<CardConsumption, int> consumptionRepository,
         UserManager<ApplicationUser> userManager)
     {
         _cardRepository = cardRepository;
+        _consumptionRepository = consumptionRepository;
         _userManager = userManager;
     }
 
@@ -157,5 +160,35 @@ public class CardsController : Controller
 
         TempData["Success"] = $"El límite de crédito se actualizó a RD$ {model.NewLimit:N2} satisfactoriamente.";
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Consumptions(int id)
+    {
+        var card = await _cardRepository.Query()
+            .Include(c => c.Client)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (card == null) return NotFound();
+
+        var consumptions = await _consumptionRepository.Query()
+            .Where(c => c.CreditCardId == id)
+            .OrderByDescending(c => c.Date)
+            .ToListAsync();
+
+        var model = new CardConsumptionViewModel
+        {
+            CardNumber = card.CardNumber,
+            ClientName = $"{card.Client.FirstName} {card.Client.LastName}",
+            Consumptions = consumptions.Select(c => new ConsumptionItemViewModel
+            {
+                Amount = c.Amount,
+                Date = c.Date,
+                CommerceName = c.CommerceName,
+                Status = c.Status
+            }).ToList()
+        };
+
+        return View(model);
     }
 }
