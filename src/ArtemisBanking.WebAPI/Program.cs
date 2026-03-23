@@ -1,6 +1,8 @@
 using System.Text;
+using ArtemisBanking.Application.Interfaces.Services;
 using ArtemisBanking.Infrastructure;
 using ArtemisBanking.Infrastructure.Seeds;
+using ArtemisBanking.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -9,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"]!;
 builder.Services.AddAuthentication(opt =>
