@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace ArtemisBanking.WebAPI.Controllers;
 
@@ -360,8 +361,9 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> ChangeUserStatus(string id, [FromBody] ChangeUserStatusDto request)
     {
-        var authenticatedUserId = User.FindFirst("NameIdentifier")?.Value;
 
+        var authenticatedUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
         if (id == authenticatedUserId)
             return Forbid();
 
