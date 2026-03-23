@@ -20,13 +20,21 @@ public enum ConsumptionStatus
 
 public enum TransactionCategory
 {
-    SavingsTransfer    = 1,
-    CreditCardPayment  = 2,
-    LoanPayment        = 3,
-    CashAdvance        = 4,
-    LoanDisbursement   = 5,
-    CashierDeposit     = 6,
-    CashierWithdrawal  = 7
+    // Cliente - Operaciones propias
+    TransferOwnAccounts = 1,
+    TransferToBeneficiary = 2,
+    TransferExpress = 3,
+    CreditCardPayment = 4,
+    LoanPayment = 5,
+    CashAdvance = 6,
+
+    // Cajero - Operaciones en nombre de cliente
+    CashierDeposit = 10,
+    CashierWithdrawal = 11,
+    CashierCreditCardPayment = 12,
+    CashierLoanPayment = 13,
+    CashierThirdPartyTransfer = 14,
+    CashierThirdPartyTransferReceived = 15
 }
 
 public enum AccountType
