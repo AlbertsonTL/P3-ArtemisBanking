@@ -155,7 +155,7 @@ public class UsersController : Controller
         // Se requiere template genérico o texto plano si Albertson no dejó un template de activación prearmado
         await _emailService.SendAsync(new EmailRequestDto
         {
-            To = user.Email,
+            To = user.Email ?? string.Empty,
             Subject = "Bienvenido a Artemis Banking — Activa tu cuenta",
             Body = $"<h1>Hola {user.FirstName}</h1><p>Tu cuenta ha sido creada. Click aquí para activarla: <a href='{activationLink}'>Activar Cuenta</a></p>"
         });
