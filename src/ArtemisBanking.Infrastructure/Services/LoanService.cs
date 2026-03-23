@@ -356,7 +356,7 @@ public class LoanService : ILoanService
         bool allPaid = !loan.AmortizationEntries.Any(e => !e.IsPaid);
         if (allPaid)
         {
-            loan.Status   = LoanStatus.Paid;
+            loan.Status   = LoanStatus.Completed;
             loan.IsActive = false;
         }
 
