@@ -2,7 +2,7 @@ namespace ArtemisBanking.Infrastructure.Services;
 
 public static class EmailTemplates
 {
-    public static string ActivateAccount(string fullName, string activationLink) => $@"
+  public static string ActivateAccount(string fullName, string activationLink) => $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -38,7 +38,7 @@ public static class EmailTemplates
 </body>
 </html>";
 
-    public static string ResetPassword(string fullName, string resetLink) => $@"
+  public static string ResetPassword(string fullName, string resetLink) => $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -76,7 +76,7 @@ public static class EmailTemplates
 </body>
 </html>";
 
-    public static string ResetPasswordApi(string fullName, string token) => $@"
+  public static string ResetPasswordApi(string fullName, string token) => $@"
 <!DOCTYPE html>
 <html>
 <head><meta charset='utf-8'>
@@ -109,15 +109,15 @@ public static class EmailTemplates
 </body>
 </html>";
 
-    /// <summary>
-    /// Correo enviado al cliente cuando el admin actualiza la tasa de interés de su préstamo.
-    /// </summary>
-    public static string LoanRateUpdated(
-        string fullName,
-        string loanNumber,
-        decimal nuevaTasa,
-        decimal nuevaCuota,
-        DateTime proximaFecha) => $@"
+  /// <summary>
+  /// Correo enviado al cliente cuando el admin actualiza la tasa de interés de su préstamo.
+  /// </summary>
+  public static string LoanRateUpdated(
+      string fullName,
+      string loanNumber,
+      decimal nuevaTasa,
+      decimal nuevaCuota,
+      DateTime proximaFecha) => $@"
 <!DOCTYPE html>
 <html>
 <head><meta charset='utf-8'>
@@ -161,8 +161,8 @@ public static class EmailTemplates
 </body>
 </html>";
 
-    public static string LoanApproved(string fullName, decimal amount,
-        int termMonths, decimal rate, decimal monthlyPayment) => $@"
+  public static string LoanApproved(string fullName, decimal amount,
+      int termMonths, decimal rate, decimal monthlyPayment) => $@"
 <!DOCTYPE html>
 <html>
 <head><meta charset='utf-8'>
@@ -198,7 +198,7 @@ public static class EmailTemplates
 </body>
 </html>";
 
-    public static string TransactionNotification(string fullName, string concept, decimal amount, string target) => $@"
+  public static string TransactionNotification(string fullName, string concept, decimal amount, string target) => $@"
 <!DOCTYPE html>
 <html>
 <head><meta charset='utf-8'>
@@ -244,4 +244,89 @@ public static class EmailTemplates
 </body>
 </html>";
 
+  public static string DepositNotification(string clientName, decimal amount, string accountNumber, DateTime dateTime)
+  {
+    return $@"
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px; }}
+                .header {{ background: #28a745; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }}
+                .content {{ background: white; padding: 20px; border-radius: 0 0 8px 8px; }}
+                .amount {{ font-size: 24px; font-weight: bold; color: #28a745; margin: 10px 0; }}
+                .details {{ background: #f0f0f0; padding: 10px; border-radius: 4px; margin: 10px 0; }}
+                .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h2>Depósito Realizado</h2>
+                </div>
+                <div class='content'>
+                    <p>Hola {clientName},</p>
+                    <p>Te confirmamos que hemos recibido un depósito en tu cuenta.</p>
+                    
+                    <div class='details'>
+                        <p><strong>Número de Cuenta:</strong> {accountNumber}</p>
+                        <p><strong>Monto Depositado:</strong></p>
+                        <div class='amount'>RD$ {amount:N2}</div>
+                        <p><strong>Fecha y Hora:</strong> {dateTime:dd/MM/yyyy HH:mm:ss}</p>
+                    </div>
+                    
+                    <p>Si tienes preguntas sobre esta transacción, no dudes en contactarnos.</p>
+                    <p>Saludos,<br/><strong>Artemis Banking</strong></p>
+                </div>
+                <div class='footer'>
+                    <p>Este es un mensaje automático. No responder a este email.</p>
+                </div>
+            </div>
+        </body>
+        </html>";
+  }
+
+  public static string WithdrawalNotification(string clientName, decimal amount, string accountNumber, DateTime dateTime)
+  {
+    return $@"
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px; }}
+                .header {{ background: #dc3545; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }}
+                .content {{ background: white; padding: 20px; border-radius: 0 0 8px 8px; }}
+                .amount {{ font-size: 24px; font-weight: bold; color: #dc3545; margin: 10px 0; }}
+                .details {{ background: #f0f0f0; padding: 10px; border-radius: 4px; margin: 10px 0; }}
+                .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h2>Retiro Realizado</h2>
+                </div>
+                <div class='content'>
+                    <p>Hola {clientName},</p>
+                    <p>Te confirmamos que hemos procesado un retiro de tu cuenta.</p>
+                    
+                    <div class='details'>
+                        <p><strong>Número de Cuenta:</strong> {accountNumber}</p>
+                        <p><strong>Monto Retirado:</strong></p>
+                        <div class='amount'>RD$ {amount:N2}</div>
+                        <p><strong>Fecha y Hora:</strong> {dateTime:dd/MM/yyyy HH:mm:ss}</p>
+                    </div>
+                    
+                    <p>Si tienes preguntas sobre esta transacción, no dudes en contactarnos.</p>
+                    <p>Saludos,<br/><strong>Artemis Banking</strong></p>
+                </div>
+                <div class='footer'>
+                    <p>Este es un mensaje automático. No responder a este email.</p>
+                </div>
+            </div>
+        </body>
+        </html>";
+  }
 }

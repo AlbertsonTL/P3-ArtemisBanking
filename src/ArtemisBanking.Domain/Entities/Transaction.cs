@@ -12,6 +12,7 @@ public class Transaction : BaseEntity<int>
     public TransactionCategory Category { get; set; }
     public string Origin { get; set; } = string.Empty;
     public string Beneficiary { get; set; } = string.Empty;
+    public string? CashierId { get; set; } // Null si es operación del cliente, UserId si es operación del cajero
 
     public int SavingsAccountId { get; set; }
     public SavingsAccount SavingsAccount { get; set; } = null!;
