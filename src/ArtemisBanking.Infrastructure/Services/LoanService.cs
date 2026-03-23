@@ -229,7 +229,6 @@ public class LoanService : ILoanService
         }
     }
 
-    /// <inheritdoc/>
     public async Task UpdateInterestRateAsync(int loanId, decimal nuevaTasaAnual)
     {
         //  1. Cargar préstamo─
@@ -316,7 +315,6 @@ public class LoanService : ILoanService
         }
     }
 
-    /// <inheritdoc/>
     public async Task<decimal> ProcessSequentialPaymentAsync(int loanId, decimal amount)
     {
         var loan = await _loanRepo.Query()
