@@ -27,6 +27,10 @@ public enum TransactionCategory
     CreditCardPayment = 4,
     LoanPayment = 5,
     CashAdvance = 6,
+    SavingsTransfer = 7,
+    
+    // Préstamo
+    LoanDisbursement = 8,
 
     // Cajero - Operaciones en nombre de cliente
     CashierDeposit = 10,
@@ -42,3 +46,4 @@ public enum AccountType
     Main      = 1,
     Secondary = 2
 }
+
