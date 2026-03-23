@@ -315,4 +315,54 @@ public class LoanService : ILoanService
             // Best-effort; los cambios ya están persistidos.
         }
     }
+
+    /// <inheritdoc/>
+    public async Task<decimal> ProcessSequentialPaymentAsync(int loanId, decimal amount)
+    {
+        var loan = await _loanRepo.Query()
+            .Include(l => l.AmortizationEntries)
+            .FirstOrDefaultAsync(l => l.Id == loanId)
+            ?? throw new InvalidOperationException("Préstamo no encontrado.");
+
+        if (!loan.IsActive)
+            throw new InvalidOperationException("El préstamo ya no está activo.");
+
+        // Obtener cuotas pendientes en orden cronológico
+        var pendingEntries = loan.AmortizationEntries
+            .Where(e => !e.IsPaid)
+            .OrderBy(e => e.PaymentDate)
+            .ToList();
+
+        decimal remaining = amount;
+
+        // Aplicar pago secuencial cuota por cuota
+        foreach (var entry in pendingEntries)
+        {
+            if (remaining <= 0) break;
+
+            decimal apply = Math.Min(remaining, entry.QuotaAmount);
+            entry.IsPaid = true;
+            entry.PaidAt = DateTime.UtcNow;
+            remaining   -= apply;
+            _entryRepo.Update(entry);
+        }
+
+        decimal applied = amount - remaining;
+
+        // Actualizar monto pagado en el préstamo
+        loan.AmountPaid += applied;
+
+        // Si no quedan cuotas pendientes, cerrar el préstamo
+        bool allPaid = !loan.AmortizationEntries.Any(e => !e.IsPaid);
+        if (allPaid)
+        {
+            loan.Status   = LoanStatus.Paid;
+            loan.IsActive = false;
+        }
+
+        _loanRepo.Update(loan);
+        await _loanRepo.SaveChangesAsync();
+
+        return applied;
+    }
 }

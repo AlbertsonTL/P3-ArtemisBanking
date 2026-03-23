@@ -302,6 +302,9 @@ namespace ArtemisBanking.Infrastructure.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("AmountPaid")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("AnnualInterestRate")
                         .HasColumnType("decimal(5,2)");
 
@@ -322,6 +325,9 @@ namespace ArtemisBanking.Infrastructure.Migrations
 
                     b.Property<decimal>("MonthlyPayment")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<int>("TermMonths")
                         .HasColumnType("int");
