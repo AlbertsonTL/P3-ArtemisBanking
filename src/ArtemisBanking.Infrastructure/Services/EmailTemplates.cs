@@ -329,4 +329,237 @@ public static class EmailTemplates
         </body>
         </html>";
   }
+
+  public static string CreditCardPaymentNotification(string clientName, decimal amountPaid, string accountNumber, string last4CardDigits, DateTime dateTime)
+  {
+    return $@"
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Pago a Tarjeta de Crédito</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #007bff; color: white; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; }}
+        .header h2 {{ margin: 0; }}
+        .content {{ background-color: #f9f9f9; padding: 20px; border-radius: 5px; }}
+        .detail-row {{ display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd; }}
+        .detail-row:last-child {{ border-bottom: none; }}
+        .label {{ font-weight: bold; color: #666; }}
+        .value {{ color: #333; }}
+        .amount {{ font-size: 24px; color: #007bff; font-weight: bold; }}
+        .footer {{ text-align: center; padding-top: 20px; color: #999; font-size: 12px; }}
+        .success-icon {{ color: #28a745; font-size: 14px; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2><span class='success-icon'>✓</span> Pago a Tarjeta de Crédito Realizado</h2>
+        </div>
+        <div class='content'>
+            <p>Estimado/a <strong>{clientName}</strong>,</p>
+            <p>Confirmamos que tu pago a tarjeta de crédito ha sido procesado exitosamente.</p>
+            <div class='detail-row'>
+                <span class='label'>Tarjeta:</span>
+                <span class='value'>**** **** **** {last4CardDigits}</span>
+            </div>
+            <div class='detail-row'>
+                <span class='label'>Cuenta Origen:</span>
+                <span class='value'>{accountNumber}</span>
+            </div>
+            <div class='detail-row'>
+                <span class='label'>Monto Pagado:</span>
+                <span class='value amount'>RD$ {amountPaid:N2}</span>
+            </div>
+            <div class='detail-row'>
+                <span class='label'>Fecha y Hora:</span>
+                <span class='value'>{dateTime:dd/MM/yyyy HH:mm:ss}</span>
+            </div>
+            <p style='margin-top: 20px; color: #666; font-size: 14px;'>Si tienes preguntas sobre esta transacción, por favor contacta con nuestro servicio al cliente.</p>
+        </div>
+        <div class='footer'>
+            <p>Artemis Banking © 2026 - Banco Digital Seguro</p>
+            <p>Este es un correo automático, por favor no responder.</p>
+        </div>
+    </div>
+</body>
+</html>";
+  }
+
+  public static string LoanPaymentNotification(string clientName, decimal amountPaid, string last4AccountDigits, string loanNumber, DateTime dateTime, decimal excessAmount = 0)
+  {
+    string excessMessage = excessAmount > 0
+        ? $"<div class='detail-row'><span class='label'>Excedente Retornado:</span><span class='value'>RD$ {excessAmount:N2}</span></div>"
+        : "";
+
+    return $@"
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Pago a Préstamo</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #17a2b8; color: white; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; }}
+        .header h2 {{ margin: 0; }}
+        .content {{ background-color: #f9f9f9; padding: 20px; border-radius: 5px; }}
+        .detail-row {{ display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd; }}
+        .detail-row:last-child {{ border-bottom: none; }}
+        .label {{ font-weight: bold; color: #666; }}
+        .value {{ color: #333; }}
+        .amount {{ font-size: 24px; color: #17a2b8; font-weight: bold; }}
+        .footer {{ text-align: center; padding-top: 20px; color: #999; font-size: 12px; }}
+        .success-icon {{ color: #28a745; font-size: 14px; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2><span class='success-icon'>✓</span> Pago a Préstamo Realizado</h2>
+        </div>
+        <div class='content'>
+            <p>Estimado/a <strong>{clientName}</strong>,</p>
+            <p>Confirmamos que tu pago al préstamo ha sido procesado exitosamente de forma secuencial.</p>
+            <div class='detail-row'>
+                <span class='label'>Préstamo #:</span>
+                <span class='value'>{loanNumber}</span>
+            </div>
+            <div class='detail-row'>
+                <span class='label'>Cuenta Origen:</span>
+                <span class='value'>**** **** **** {last4AccountDigits}</span>
+            </div>
+            <div class='detail-row'>
+                <span class='label'>Monto Pagado:</span>
+                <span class='value amount'>RD$ {amountPaid:N2}</span>
+            </div>
+            {excessMessage}
+            <div class='detail-row'>
+                <span class='label'>Fecha y Hora:</span>
+                <span class='value'>{dateTime:dd/MM/yyyy HH:mm:ss}</span>
+            </div>
+            <p style='margin-top: 20px; color: #666; font-size: 14px;'>Tu pago ha sido aplicado de acuerdo al cronograma de cuotas de tu préstamo.</p>
+        </div>
+        <div class='footer'>
+            <p>Artemis Banking © 2026 - Banco Digital Seguro</p>
+            <p>Este es un correo automático, por favor no responder.</p>
+        </div>
+    </div>
+</body>
+</html>";
+  }
+
+  public static string ThirdPartyTransferSentNotification(string clientName, decimal amount, string last4DestinationDigits, DateTime dateTime)
+  {
+    return $@"
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Transacción Enviada</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #dc3545; color: white; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; }}
+        .header h2 {{ margin: 0; }}
+        .content {{ background-color: #f9f9f9; padding: 20px; border-radius: 5px; }}
+        .detail-row {{ display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd; }}
+        .detail-row:last-child {{ border-bottom: none; }}
+        .label {{ font-weight: bold; color: #666; }}
+        .value {{ color: #333; }}
+        .amount {{ font-size: 24px; color: #dc3545; font-weight: bold; }}
+        .footer {{ text-align: center; padding-top: 20px; color: #999; font-size: 12px; }}
+        .success-icon {{ color: #28a745; font-size: 14px; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2><span class='success-icon'>✓</span> Transacción Enviada</h2>
+        </div>
+        <div class='content'>
+            <p>Estimado/a <strong>{clientName}</strong>,</p>
+            <p>Confirmamos que tu transferencia ha sido enviada exitosamente.</p>
+            <div class='detail-row'>
+                <span class='label'>Cuenta Destino (últimos 4):</span>
+                <span class='value'>{last4DestinationDigits}</span>
+            </div>
+            <div class='detail-row'>
+                <span class='label'>Monto Transferido:</span>
+                <span class='value amount'>RD$ {amount:N2}</span>
+            </div>
+            <div class='detail-row'>
+                <span class='label'>Fecha y Hora:</span>
+                <span class='value'>{dateTime:dd/MM/yyyy HH:mm:ss}</span>
+            </div>
+            <p style='margin-top: 20px; color: #666; font-size: 14px;'>La transferencia se ha procesado y el dinero estará disponible en la cuenta destino dentro de poco.</p>
+        </div>
+        <div class='footer'>
+            <p>Artemis Banking © 2026 - Banco Digital Seguro</p>
+            <p>Este es un correo automático, por favor no responder.</p>
+        </div>
+    </div>
+</body>
+</html>";
+  }
+
+  public static string ThirdPartyTransferReceivedNotification(string clientName, decimal amount, string last4SourceDigits, DateTime dateTime)
+  {
+    return $@"
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Transacción Recibida</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #28a745; color: white; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 20px; }}
+        .header h2 {{ margin: 0; }}
+        .content {{ background-color: #f9f9f9; padding: 20px; border-radius: 5px; }}
+        .detail-row {{ display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd; }}
+        .detail-row:last-child {{ border-bottom: none; }}
+        .label {{ font-weight: bold; color: #666; }}
+        .value {{ color: #333; }}
+        .amount {{ font-size: 24px; color: #28a745; font-weight: bold; }}
+        .footer {{ text-align: center; padding-top: 20px; color: #999; font-size: 12px; }}
+        .success-icon {{ color: #28a745; font-size: 14px; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2><span class='success-icon'>✓</span> Transacción Recibida</h2>
+        </div>
+        <div class='content'>
+            <p>Estimado/a <strong>{clientName}</strong>,</p>
+            <p>¡Excelentes noticias! Has recibido una transferencia exitosamente.</p>
+            <div class='detail-row'>
+                <span class='label'>Cuenta Origen (últimos 4):</span>
+                <span class='value'>{last4SourceDigits}</span>
+            </div>
+            <div class='detail-row'>
+                <span class='label'>Monto Recibido:</span>
+                <span class='value amount'>RD$ {amount:N2}</span>
+            </div>
+            <div class='detail-row'>
+                <span class='label'>Fecha y Hora:</span>
+                <span class='value'>{dateTime:dd/MM/yyyy HH:mm:ss}</span>
+            </div>
+            <p style='margin-top: 20px; color: #666; font-size: 14px;'>El dinero ya está disponible en tu cuenta y puedes utilizarlo de inmediato.</p>
+        </div>
+        <div class='footer'>
+            <p>Artemis Banking © 2026 - Banco Digital Seguro</p>
+            <p>Este es un correo automático, por favor no responder.</p>
+        </div>
+    </div>
+</body>
+</html>";
+  }
 }
