@@ -1,4 +1,5 @@
 using ArtemisBanking.Domain.Common;
+using ArtemisBanking.Domain.Enums;
 
 namespace ArtemisBanking.Domain.Entities;
 
@@ -9,7 +10,9 @@ public class Loan : BaseEntity<int>
     public decimal AnnualInterestRate{ get; set; }
     public int TermMonths { get; set; }
     public decimal MonthlyPayment { get; set; }
+    public decimal AmountPaid { get; set; } = 0m;
     public bool IsActive { get; set; } = true;
+    public LoanStatus Status { get; set; } = LoanStatus.Active;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public string ClientId { get; set; } = string.Empty;

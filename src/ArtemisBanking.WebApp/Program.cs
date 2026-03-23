@@ -1,6 +1,5 @@
 using ArtemisBanking.Infrastructure;
 using ArtemisBanking.Infrastructure.Seeds;
-using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,25 +13,11 @@ builder.Services.ConfigureApplicationCookie(opt =>
     opt.ExpireTimeSpan   = TimeSpan.FromHours(8);
 });
 
-builder.Services.AddHangfire(cfg =>
-    cfg.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-       .UseSimpleAssemblyNameTypeSerializer()
-       .UseRecommendedSerializerSettings()
-       .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddHangfireServer();
-
 builder.Services.AddSession(opt =>
 {
     opt.IdleTimeout        = TimeSpan.FromHours(8);
     opt.Cookie.HttpOnly    = true;
     opt.Cookie.IsEssential = true;
-});
-
-builder.Services.ConfigureApplicationCookie(opt =>
-{
-    opt.LoginPath        = "/Account/Login";
-    opt.AccessDeniedPath = "/Account/AccessDenied";
-    opt.ExpireTimeSpan   = TimeSpan.FromHours(8);
 });
 
 var app = builder.Build();
@@ -50,9 +35,6 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
-if (app.Environment.IsDevelopment())
-    app.UseHangfireDashboard("/hangfire");
-
 await DefaultUserSeeder.SeedAsync(app.Services);
 
 app.MapAreaControllerRoute(
@@ -69,9 +51,6 @@ app.MapAreaControllerRoute(
     name: "CashierArea",
     areaName: "Cashier",
     pattern: "Cashier/{controller=Home}/{action=Index}/{id?}");
-
-
-
 
 app.MapControllerRoute(
     name: "default",

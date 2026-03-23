@@ -1,7 +1,6 @@
 using System.Text;
 using ArtemisBanking.Infrastructure;
 using ArtemisBanking.Infrastructure.Seeds;
-using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -46,13 +45,6 @@ builder.Services.AddAuthentication(opt =>
         }
     };
 });
-
-builder.Services.AddHangfire(cfg =>
-    cfg.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-       .UseSimpleAssemblyNameTypeSerializer()
-       .UseRecommendedSerializerSettings()
-       .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddHangfireServer();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

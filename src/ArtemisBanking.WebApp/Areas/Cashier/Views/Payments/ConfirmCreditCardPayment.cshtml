@@ -1,0 +1,92 @@
+@using ArtemisBanking.WebApp.ViewModels.Cashier
+@model CreditCardPaymentConfirmationViewModel
+@{
+    ViewData["Title"] = "Confirmar Pago a Tarjeta";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="mb-4">
+            <a asp-action="PayCreditCard" class="text-slate-500 text-decoration-none small fw-bold">
+                <i class="fas fa-arrow-left me-1"></i> Volver
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-primary bg-opacity-10 border-bottom-0 pt-4 px-4 text-center">
+                <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 50px; height: 50px;">
+                    <i class="fas fa-check-circle fs-4"></i>
+                </div>
+                <h4 class="fw-bold text-slate-800 mb-0">Confirmar Pago</h4>
+                <p class="text-muted small">Verifica los datos antes de procesar</p>
+            </div>
+            <div class="card-body p-4">
+                <div class="bg-light border border-primary border-opacity-25 rounded-3 p-4 mb-4">
+                    <h6 class="fw-bold text-slate-800 mb-3">Información de la Tarjeta</h6>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <small class="text-muted d-block">Titular de la Tarjeta</small>
+                            <p class="fw-bold text-slate-800 mb-0">@Model.CardHolderName</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <small class="text-muted d-block">Número de Tarjeta</small>
+                            <p class="fw-bold text-slate-800 mb-0">**** **** **** @Model.CardNumber.Substring(Math.Max(0, Model.CardNumber.Length - 4))</p>
+                        </div>
+                    </div>
+
+                    <hr class="my-3 opacity-25" />
+
+                    <h6 class="fw-bold text-slate-800 mb-3">Detalles del Pago</h6>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Deuda Actual</small>
+                            <p class="fw-bold text-slate-800 mb-0">RD$ @Model.CurrentCardDebt.ToString("N2")</p>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Monto Solicitado</small>
+                            <p class="fw-bold text-slate-800 mb-0">RD$ @Model.Amount.ToString("N2")</p>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-3 opacity-25" />
+
+                    <div class="row">
+                        <div class="col-12">
+                            <small class="text-muted d-block">Monto a Pagar</small>
+                            <p class="fw-bold text-primary h5 mb-0">RD$ @Model.ActualAmountToCharge.ToString("N2")</p>
+                        </div>
+                    </div>
+
+                    @if (Model.Amount > Model.CurrentCardDebt)
+                    {
+                        <div class="alert alert-info small mt-3 mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Nota:</strong> Se pagará solo RD$ @Model.ActualAmountToCharge.ToString("N2") (deuda actual). El monto adicional será ignorado.
+                        </div>
+                    }
+                </div>
+
+                <div class="row g-2">
+                    <div class="col-6">
+                        <form asp-action="ConfirmPayment" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm">
+                                <i class="fas fa-check me-2"></i> Confirmar
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-6">
+                        <form asp-action="CancelPayment" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-secondary w-100 py-3 fw-bold rounded-3">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

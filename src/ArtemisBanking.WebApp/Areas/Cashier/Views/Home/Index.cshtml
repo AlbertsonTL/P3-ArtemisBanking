@@ -1,17 +1,172 @@
+@model CashierDashboardViewModel
 @{
-    ViewData["Title"] = "Panel de Cajero";
+    ViewData["Title"] = "Inicio Cajero - Artemis Banking";
 }
 
-<div class="container mt-5">
-    <div class="card shadow-sm border-0 p-5 text-center">
-        <div class="mb-4">
-            <i class="fas fa-cash-register text-primary" style="font-size: 4rem;"></i>
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-slate-800 mb-1">Bienvenido, @User.Identity?.Name</h2>
+            <p class="text-muted small">Panel de control del cajero - Operaciones del día actual</p>
         </div>
-        <h2 class="fw-bold">Módulo de Cajero</h2>
-        <p class="text-muted">Estado: Pendiente de implementación.</p>
-        <p>Hola, <strong>@User.Identity.Name</strong>. Este módulo será implementado por el Dev 1 para gestionar depósitos y retiros.</p>
-        <div class="mt-4">
-            <a asp-area="" asp-controller="Account" asp-action="Logout" class="btn btn-outline-danger">Cerrar Sesión</a>
+        <div class="col-md-4 text-end">
+            <a asp-action="Logout" asp-controller="Account" class="btn btn-outline-danger btn-sm">
+                <i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión
+            </a>
+        </div>
+    </div>
+
+    <!-- Indicadores del día -->
+    <div class="row g-4 mb-5">
+        <!-- Depósitos -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <div class="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 60px; height: 60px;">
+                        <i class="fas fa-arrow-down fs-5"></i>
+                    </div>
+                    <h6 class="text-muted small mb-2">Depósitos Realizados</h6>
+                    <h3 class="fw-bold text-slate-800 mb-1">@Model.DepositsCount</h3>
+                    <p class="text-muted small">RD$ @Model.TotalDeposited:N2</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Retiros -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <div class="bg-danger-subtle text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 60px; height: 60px;">
+                        <i class="fas fa-arrow-up fs-5"></i>
+                    </div>
+                    <h6 class="text-muted small mb-2">Retiros Realizados</h6>
+                    <h3 class="fw-bold text-slate-800 mb-1">@Model.WithdrawalsCount</h3>
+                    <p class="text-muted small">RD$ @Model.TotalWithdrawn:N2</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagos a Tarjetas -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <div class="bg-info-subtle text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 60px; height: 60px;">
+                        <i class="fas fa-credit-card fs-5"></i>
+                    </div>
+                    <h6 class="text-muted small mb-2">Pagos a Tarjetas</h6>
+                    <h3 class="fw-bold text-slate-800 mb-1">@Model.CreditCardPaymentsCount</h3>
+                    <p class="text-muted small">Transacciones procesadas</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagos a Préstamos -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <div class="bg-warning-subtle text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 60px; height: 60px;">
+                        <i class="fas fa-file-invoice-dollar fs-5"></i>
+                    </div>
+                    <h6 class="text-muted small mb-2">Pagos a Préstamos</h6>
+                    <h3 class="fw-bold text-slate-800 mb-1">@Model.LoanPaymentsCount</h3>
+                    <p class="text-muted small">Transacciones procesadas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menú de Operaciones -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <h5 class="fw-bold text-slate-800">Operaciones Disponibles</h5>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- Depósito -->
+        <div class="col-md-6 col-lg-4">
+            <a asp-action="Deposit" asp-controller="Deposits" class="card border-0 shadow-sm text-decoration-none h-100" 
+               style="transition: transform 0.3s ease;">
+                <div class="card-body p-4 text-center">
+                    <div class="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 50px; height: 50px;">
+                        <i class="fas fa-cash-register fs-5"></i>
+                    </div>
+                    <h6 class="fw-bold text-slate-800">Realizar Depósito</h6>
+                    <p class="text-muted small">Acreditar dinero a una cuenta</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Retiro -->
+        <div class="col-md-6 col-lg-4">
+            <a asp-action="Withdrawal" asp-controller="Withdrawals" class="card border-0 shadow-sm text-decoration-none h-100" 
+               style="transition: transform 0.3s ease;">
+                <div class="card-body p-4 text-center">
+                    <div class="bg-danger-subtle text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 50px; height: 50px;">
+                        <i class="fas fa-money-bill-alt fs-5"></i>
+                    </div>
+                    <h6 class="fw-bold text-slate-800">Realizar Retiro</h6>
+                    <p class="text-muted small">Debitar dinero de una cuenta</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Pago a Tarjeta -->
+        <div class="col-md-6 col-lg-4">
+            <a asp-action="PayCreditCard" asp-controller="Payments" class="card border-0 shadow-sm text-decoration-none h-100" 
+               style="transition: transform 0.3s ease;">
+                <div class="card-body p-4 text-center">
+                    <div class="bg-info-subtle text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 50px; height: 50px;">
+                        <i class="fas fa-credit-card fs-5"></i>
+                    </div>
+                    <h6 class="fw-bold text-slate-800">Pago a Tarjeta</h6>
+                    <p class="text-muted small">Procesar pago de tarjeta</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Pago a Préstamo -->
+        <div class="col-md-6 col-lg-4">
+            <a asp-action="PayLoan" asp-controller="Payments" class="card border-0 shadow-sm text-decoration-none h-100" 
+               style="transition: transform 0.3s ease;">
+                <div class="card-body p-4 text-center">
+                    <div class="bg-warning-subtle text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 50px; height: 50px;">
+                        <i class="fas fa-file-invoice-dollar fs-5"></i>
+                    </div>
+                    <h6 class="fw-bold text-slate-800">Pago a Préstamo</h6>
+                    <p class="text-muted small">Procesar pago de préstamo</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Transacción a Terceros -->
+        <div class="col-md-6 col-lg-4">
+            <a asp-action="TransferThirdParty" asp-controller="Transfers" class="card border-0 shadow-sm text-decoration-none h-100" 
+               style="transition: transform 0.3s ease;">
+                <div class="card-body p-4 text-center">
+                    <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 50px; height: 50px;">
+                        <i class="fas fa-exchange-alt fs-5"></i>
+                    </div>
+                    <h6 class="fw-bold text-slate-800">Transf. a Terceros</h6>
+                    <p class="text-muted small">Transferencia a cuentas terceros</p>
+                </div>
+            </a>
         </div>
     </div>
 </div>
+
+<style>
+    a.card:hover {
+        transform: translateY(-4px);
+    }
+</style>

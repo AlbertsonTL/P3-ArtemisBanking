@@ -53,4 +53,14 @@ public interface ILoanService
     /// <param name="loanId">ID del préstamo a modificar.</param>
     /// <param name="nuevaTasaAnual">Nueva tasa de interés anual (%).</param>
     Task UpdateInterestRateAsync(int loanId, decimal nuevaTasaAnual);
+
+    /// <summary>
+    /// Aplica un pago secuencial a las cuotas pendientes de un préstamo,
+    /// marcando cuotas como pagadas en orden cronológico hasta agotar el monto.
+    /// Actualiza AmountPaid y Status del préstamo si queda saldado.
+    /// </summary>
+    /// <param name="loanId">ID del préstamo.</param>
+    /// <param name="amount">Monto a aplicar al préstamo.</param>
+    /// <returns>El monto efectivamente aplicado.</returns>
+    Task<decimal> ProcessSequentialPaymentAsync(int loanId, decimal amount);
 }

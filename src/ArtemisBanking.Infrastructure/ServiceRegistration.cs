@@ -19,17 +19,16 @@ public static class ServiceRegistration
         IConfiguration configuration)
     {
         // EF Core + SQL Server
-        // Soporta tanto "DefaultConnection" (WebApp/WebAPI) como "SqlConnectionString" (Azure Functions)
         var connStr = configuration.GetConnectionString("DefaultConnection")
                    ?? configuration["SqlConnectionString"]
                    ?? throw new InvalidOperationException(
-                       "Connection string not found. Set 'DefaultConnection' (WebApp) or 'SqlConnectionString' (Functions).");
+                       "Connection string not found. Set 'DefaultConnection' (WebApp) or 'SqlConnectionString' (Azure Functions).");
 
         services.AddDbContext<AppDbContext>(opt =>
             opt.UseSqlServer(connStr,
                 sql => sql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
-        // Identity — se registra solo cuando no está ya registrado (evita conflicto en Azure Functions)
+        // Identity
         var identityBuilder = services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
         {
             opt.Password.RequireDigit           = true;
@@ -42,7 +41,7 @@ public static class ServiceRegistration
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
 
-        // AutoMapper — registra todos los perfiles del assembly
+        // AutoMapper
         services.AddAutoMapper(typeof(UserMappingProfile).Assembly);
 
         // Repositorio genérico
@@ -51,13 +50,12 @@ public static class ServiceRegistration
         // Email
         services.AddScoped<IEmailService, EmailService>();
 
-        // Servicio de Préstamos (Issues #18, #19, #21)
+        // Servicio de Préstamos
         services.AddScoped<ILoanService, LoanService>();
 
-        // Servicio de Transacciones (Dev 2 - Issues #28 a #33)
+        // Servicio de Transacciones
         services.AddScoped<ITransactionService, TransactionService>();
 
         return services;
-
     }
 }
