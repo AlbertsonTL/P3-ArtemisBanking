@@ -38,7 +38,8 @@ public class JwtService : IJwtService
             new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
             new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
             new Claim(ClaimTypes.Role, user.Role.ToString()),
-            new Claim("FullName", $"{user.FirstName} {user.LastName}".Trim())
+            new Claim("FullName", $"{user.FirstName} {user.LastName}".Trim()),
+            new Claim("CommerceId", user.CommerceId.HasValue ? user.CommerceId.Value.ToString() : string.Empty)
         };
 
         var token = new JwtSecurityToken(

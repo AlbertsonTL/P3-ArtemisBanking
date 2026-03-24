@@ -29,6 +29,12 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             e.Property(u => u.IdentityCard).HasMaxLength(20).IsRequired();
             e.HasIndex(u => u.IdentityCard).IsUnique();
             e.Property(u => u.Role).IsRequired();
+            e.Property(u => u.CommerceId).IsRequired(false);
+            e.HasOne<Commerce>()
+             .WithMany()
+             .HasForeignKey(u => u.CommerceId)
+             .OnDelete(DeleteBehavior.SetNull)
+             .IsRequired(false);
         });
 
         // SavingsAccount
