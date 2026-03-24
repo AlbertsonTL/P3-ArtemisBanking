@@ -118,6 +118,9 @@ namespace ArtemisBanking.Infrastructure.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
+                    b.Property<int?>("CommerceId")
+                        .HasColumnType("int");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -129,6 +132,8 @@ namespace ArtemisBanking.Infrastructure.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CommerceId");
 
                     b.HasIndex("IdentityCard")
                         .IsUnique();
