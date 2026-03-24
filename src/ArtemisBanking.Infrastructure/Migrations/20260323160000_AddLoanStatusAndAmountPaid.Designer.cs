@@ -4,6 +4,7 @@ using ArtemisBanking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,10 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ArtemisBanking.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260323160000_AddLoanStatusAndAmountPaid")]
+    partial class AddLoanStatusAndAmountPaid
     {
         /// <inheritdoc />
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,9 +118,6 @@ namespace ArtemisBanking.Infrastructure.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("CommerceId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
@@ -133,8 +132,6 @@ namespace ArtemisBanking.Infrastructure.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CommerceId");
 
                     b.HasIndex("IdentityCard")
                         .IsUnique();
@@ -582,14 +579,6 @@ namespace ArtemisBanking.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Loan");
-                });
-
-            modelBuilder.Entity("ArtemisBanking.Domain.Entities.ApplicationUser", b =>
-                {
-                    b.HasOne("ArtemisBanking.Domain.Entities.Commerce", null)
-                        .WithMany()
-                        .HasForeignKey("CommerceId")
-                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("ArtemisBanking.Domain.Entities.Beneficiary", b =>

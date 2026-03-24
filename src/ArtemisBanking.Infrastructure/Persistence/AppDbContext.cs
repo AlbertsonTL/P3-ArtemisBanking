@@ -59,6 +59,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             e.Property(l => l.Amount).HasColumnType("decimal(18,2)");
             e.Property(l => l.AnnualInterestRate).HasColumnType("decimal(5,2)");
             e.Property(l => l.MonthlyPayment).HasColumnType("decimal(18,2)");
+            e.Property(l => l.AmountPaid).HasColumnType("decimal(18,2)");
             e.HasOne(l => l.Client).WithMany(u => u.Loans)
              .HasForeignKey(l => l.ClientId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(l => l.Admin).WithMany()
@@ -82,6 +83,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             e.HasIndex(c => c.CardNumber).IsUnique();
             e.Property(c => c.CreditLimit).HasColumnType("decimal(18,2)");
             e.Property(c => c.DebtAmount).HasColumnType("decimal(18,2)");
+            e.Ignore(c => c.CurrentDebt); // computed alias, not a DB column
             e.Property(c => c.ExpirationDate).HasMaxLength(5);
             e.Property(c => c.CVCHashed).HasMaxLength(64);
             e.HasOne(c => c.Client).WithMany(u => u.CreditCards)
