@@ -33,19 +33,22 @@ public class CardsController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var cards = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(_cardRepository.Query(), c => c.Client).ToListAsync();
-        
-        var model = cards.Select(c => new CardListViewModel
-        {
-            Id = c.Id,
-            CardNumber = c.CardNumber,
-            ClientName = $"{c.Client.FirstName} {c.Client.LastName}",
-            IdentityCard = c.Client.IdentityCard,
-            CreditLimit = c.CreditLimit,
-            DebtAmount = c.DebtAmount,
-            ExpirationDate = c.ExpirationDate,
-            IsActive = c.IsActive
-        }).OrderByDescending(x => x.IsActive).ThenBy(x => x.ClientName).ToList();
+        var model = await _cardRepository.Query()
+            .Include(c => c.Client)
+            .OrderByDescending(c => c.IsActive)
+            .ThenBy(c => c.Client.FirstName)
+            .Select(c => new CardListViewModel
+            {
+                Id = c.Id,
+                CardNumber = c.CardNumber,
+                ClientName = $"{c.Client.FirstName} {c.Client.LastName}",
+                IdentityCard = c.Client.IdentityCard,
+                CreditLimit = c.CreditLimit,
+                DebtAmount = c.DebtAmount,
+                ExpirationDate = c.ExpirationDate,
+                IsActive = c.IsActive
+            })
+            .ToListAsync();
 
         return View(model);
     }
@@ -119,13 +122,7 @@ public class CardsController : Controller
         var card = await _cardRepository.GetByIdAsync(id);
         if (card == null) return NotFound();
 
-        // Regla Crítica: No se puede cancelar ni desactivar una tarjeta que tenga deuda
-        if (card.IsActive && card.DebtAmount > 0)
-        {
-            TempData["Error"] = $"No se puede desactivar o cancelar la tarjeta bloqueada ({card.CardNumber}). Debe pagar RD$ {card.DebtAmount:N2} pendiente primero.";
-            return RedirectToAction(nameof(Index));
-        }
-
+        // Corregido: Permitimos bloquear tarjetas con deuda para evitar nuevos consumos en caso de incidencia/robo.
         card.IsActive = !card.IsActive;
         _cardRepository.Update(card);
         await _cardRepository.SaveChangesAsync();

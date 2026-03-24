@@ -16,6 +16,7 @@ public class TransactionService : ITransactionService
     private readonly IGenericRepository<CardConsumption, int> _consumptionRepository;
     private readonly IGenericRepository<AmortizationEntry, int> _amortizationRepository;
     private readonly IEmailService _emailService;
+    private readonly ILoanService _loanService;
 
     public TransactionService(
         IGenericRepository<SavingsAccount, int> savingsRepository,
@@ -24,7 +25,8 @@ public class TransactionService : ITransactionService
         IGenericRepository<Transaction, int> transactionRepository,
         IGenericRepository<CardConsumption, int> consumptionRepository,
         IGenericRepository<AmortizationEntry, int> amortizationRepository,
-        IEmailService emailService)
+        IEmailService emailService,
+        ILoanService loanService)
     {
         _savingsRepository = savingsRepository;
         _cardRepository = cardRepository;
@@ -33,6 +35,7 @@ public class TransactionService : ITransactionService
         _consumptionRepository = consumptionRepository;
         _amortizationRepository = amortizationRepository;
         _emailService = emailService;
+        _loanService = loanService;
     }
 
     public async Task<bool> TransferBetweenOwnAccountsAsync(string senderClientId, string sourceAccountNumber, string destinationAccountNumber, decimal amount)
@@ -184,36 +187,18 @@ public class TransactionService : ITransactionService
 
         if (source == null || loan == null || source.Balance < amount) return false;
 
-        var entries = await _amortizationRepository.Query()
-            .Where(e => e.LoanId == loanId && !e.IsPaid)
-            .OrderBy(e => e.PaymentDate)
-            .ToListAsync();
+        // Utilizamos la lógica secuencial del LoanService para asegurar consistencia
+        var applied = await _loanService.ProcessSequentialPaymentAsync(loanId, amount);
+        
+        if (applied <= 0) return false;
 
-        decimal remainingAmount = amount;
-        decimal paidTotal = 0;
-
-        foreach (var entry in entries)
-        {
-            if (remainingAmount >= entry.QuotaAmount)
-            {
-                remainingAmount -= entry.QuotaAmount;
-                paidTotal += entry.QuotaAmount;
-                entry.IsPaid = true;
-                entry.PaidAt = DateTime.UtcNow;
-                _amortizationRepository.Update(entry);
-            }
-            else break;
-        }
-
-        if (paidTotal == 0) return false;
-
-        source.Balance -= paidTotal;
+        source.Balance -= applied;
         _savingsRepository.Update(source);
 
         await _transactionRepository.AddAsync(new Transaction
         {
             Type = TransactionType.Debit,
-            Amount = paidTotal,
+            Amount = applied,
             Category = TransactionCategory.LoanPayment,
             Status = TransactionStatus.Approved,
             Origin = sourceAccountNumber,
@@ -222,20 +207,13 @@ public class TransactionService : ITransactionService
             Date = DateTime.UtcNow
         });
 
-        var pending = await _amortizationRepository.ExistsAsync(e => e.LoanId == loanId && !e.IsPaid);
-        if (!pending)
-        {
-            loan.IsActive = false;
-            _loanRepository.Update(loan);
-        }
-
         await _savingsRepository.SaveChangesAsync();
 
         await _emailService.SendAsync(new EmailRequestDto
         {
             To = loan.Client.Email!,
             Subject = "Pago de Préstamo Realizado",
-            Body = EmailTemplates.TransactionNotification($"{loan.Client.FirstName} {loan.Client.LastName}", "Pago Préstamo", paidTotal, loan.LoanNumber)
+            Body = EmailTemplates.TransactionNotification($"{loan.Client.FirstName} {loan.Client.LastName}", "Pago Préstamo", applied, loan.LoanNumber)
         });
 
         return true;

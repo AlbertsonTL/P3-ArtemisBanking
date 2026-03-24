@@ -332,20 +332,28 @@ public class LoanService : ILoanService
             .ToList();
 
         decimal remaining = amount;
+        decimal applied = 0;
 
         // Aplicar pago secuencial cuota por cuota
         foreach (var entry in pendingEntries)
         {
-            if (remaining <= 0) break;
-
-            decimal apply = Math.Min(remaining, entry.QuotaAmount);
-            entry.IsPaid = true;
-            entry.PaidAt = DateTime.UtcNow;
-            remaining   -= apply;
-            _entryRepo.Update(entry);
+            // Solo cerramos la cuota si el monto remanente cubre el total de la misma
+            if (remaining >= entry.QuotaAmount)
+            {
+                remaining -= entry.QuotaAmount;
+                entry.IsPaid = true;
+                entry.PaidAt = DateTime.UtcNow;
+                _entryRepo.Update(entry);
+                applied += entry.QuotaAmount;
+            }
+            else
+            {
+                // Si el remanente no alcanza para completar la siguiente cuota, 
+                // el resto queda como abono al capital total pero no cierra la cuota.
+                // Esto evita el bug de "pagar" cuotas con RD$ 1.00.
+                break;
+            }
         }
-
-        decimal applied = amount - remaining;
 
         // Actualizar monto pagado en el préstamo
         loan.AmountPaid += applied;

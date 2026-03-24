@@ -36,20 +36,21 @@ public class AccountsController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var accounts = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(_savingsRepository.Query(), a => a.Client).ToListAsync();
-
-        var model = accounts.Select(a => new AccountListViewModel
-        {
-            Id = a.Id,
-            AccountNumber = a.AccountNumber,
-            ClientName = $"{a.Client.FirstName} {a.Client.LastName}",
-            IdentityCard = a.Client.IdentityCard,
-            AccountType = a.AccountType,
-            Balance = a.Balance,
-            IsActive = a.IsActive
-        }).OrderByDescending(a => a.AccountType == AccountType.Main) // Listar principales primero
-          .ThenByDescending(a => a.IsActive)
-          .ToList();
+        var model = await _savingsRepository.Query()
+            .Include(a => a.Client)
+            .OrderByDescending(a => a.AccountType == AccountType.Main)
+            .ThenByDescending(a => a.IsActive)
+            .Select(a => new AccountListViewModel
+            {
+                Id = a.Id,
+                AccountNumber = a.AccountNumber,
+                ClientName = $"{a.Client.FirstName} {a.Client.LastName}",
+                IdentityCard = a.Client.IdentityCard,
+                AccountType = a.AccountType,
+                Balance = a.Balance,
+                IsActive = a.IsActive
+            })
+            .ToListAsync();
 
         return View(model);
     }
@@ -141,7 +142,8 @@ public class AccountsController : Controller
                 var amountTransferred = account.Balance;
                 var sourceAccountNumber = account.AccountNumber;
                 
-                var transaction = new Transaction
+                // Transacción de Crédito en la Principal
+                var creditTx = new Transaction
                 {
                     Type = TransactionType.Credit,
                     Amount = amountTransferred,
@@ -152,7 +154,22 @@ public class AccountsController : Controller
                     Beneficiary = mainAccount.AccountNumber,
                     SavingsAccountId = mainAccount.Id
                 };
-                await _transactionRepository.AddAsync(transaction);
+                
+                // Transacción de Débito en la cuenta Cerrada
+                var debitTx = new Transaction
+                {
+                    Type = TransactionType.Debit,
+                    Amount = amountTransferred,
+                    Date = DateTime.UtcNow,
+                    Status = TransactionStatus.Approved,
+                    Category = TransactionCategory.SavingsTransfer,
+                    Origin = sourceAccountNumber,
+                    Beneficiary = $"Abono a Cta {mainAccount.AccountNumber}",
+                    SavingsAccountId = account.Id
+                };
+
+                await _transactionRepository.AddAsync(creditTx);
+                await _transactionRepository.AddAsync(debitTx);
                 await _transactionRepository.SaveChangesAsync();
 
                 TempData["Success"] = $"Cuenta {account.AccountNumber} cancelada. Los RD$ {amountTransferred:N2} sobrantes fueron transferidos a su Cuenta Principal (#{mainAccount.AccountNumber}).";

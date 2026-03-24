@@ -233,17 +233,24 @@ public class TransactionsController : Controller
 
     private async Task<List<SelectListItem>> GetBeneficiariesList()
     {
-        var id = GetClientId();
-        var beneficiaries = await _beneficiaryRepository.Query().Where(b => b.ClientId == id).ToListAsync();
-        var list = new List<SelectListItem>();
-        foreach(var b in beneficiaries)
+        var clientId = GetClientId();
+        var beneficiaries = await _beneficiaryRepository.Query()
+            .Where(b => b.ClientId == clientId)
+            .OrderBy(b => b.CreatedAt)
+            .Select(b => new
+            {
+                b.AccountNumber,
+                Account = _savingsRepository.Query()
+                    .Where(s => s.AccountNumber == b.AccountNumber)
+                    .Select(s => new { s.Client.FirstName, s.Client.LastName })
+                    .FirstOrDefault()
+            })
+            .ToListAsync();
+
+        return beneficiaries.Select(b => new SelectListItem
         {
-            var acc = await _savingsRepository.Query().Include(s => s.Client).FirstOrDefaultAsync(s => s.AccountNumber == b.AccountNumber);
-            list.Add(new SelectListItem {
-                Value = b.AccountNumber,
-                Text = $"{acc?.Client.FirstName} {acc?.Client.LastName} ({b.AccountNumber})"
-            });
-        }
-        return list;
+            Value = b.AccountNumber,
+            Text = b.Account != null ? $"{b.Account.FirstName} {b.Account.LastName} ({b.AccountNumber})" : $"Abono a {b.AccountNumber}"
+        }).ToList();
     }
 }

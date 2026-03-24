@@ -33,24 +33,25 @@ public class BeneficiariesController : Controller
         
         var beneficiaries = await _beneficiaryRepository.Query()
             .Where(b => b.ClientId == clientId)
+            .OrderByDescending(b => b.CreatedAt)
+            .Select(b => new {
+                b.Id,
+                b.AccountNumber,
+                b.CreatedAt,
+                Account = _savingsRepository.Query()
+                    .Where(s => s.AccountNumber == b.AccountNumber)
+                    .Select(s => new { s.Client.FirstName, s.Client.LastName })
+                    .FirstOrDefault()
+            })
             .ToListAsync();
 
-        var model = new List<BeneficiaryListViewModel>();
-
-        foreach (var b in beneficiaries)
+        var model = beneficiaries.Select(b => new BeneficiaryListViewModel
         {
-            var account = await _savingsRepository.Query()
-                .Include(s => s.Client)
-                .FirstOrDefaultAsync(s => s.AccountNumber == b.AccountNumber);
-            
-            model.Add(new BeneficiaryListViewModel
-            {
-                Id = b.Id,
-                AccountNumber = b.AccountNumber,
-                BeneficiaryName = account != null ? $"{account.Client.FirstName} {account.Client.LastName}" : "Desconocido",
-                CreatedAt = b.CreatedAt
-            });
-        }
+            Id = b.Id,
+            AccountNumber = b.AccountNumber,
+            BeneficiaryName = b.Account != null ? $"{b.Account.FirstName} {b.Account.LastName}" : "Desconocido",
+            CreatedAt = b.CreatedAt
+        }).ToList();
 
         return View(model);
     }
@@ -74,6 +75,12 @@ public class BeneficiariesController : Controller
         if (targetAccount == null)
         {
             ModelState.AddModelError(nameof(model.AccountNumber), "El número de cuenta no existe.");
+            return View(model);
+        }
+
+        if (targetAccount.Client.Role != UserRole.Cliente)
+        {
+            ModelState.AddModelError(nameof(model.AccountNumber), "Solo se pueden agregar cuentas de tipo 'Cliente' como beneficiarios.");
             return View(model);
         }
 

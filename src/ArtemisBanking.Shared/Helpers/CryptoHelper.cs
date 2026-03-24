@@ -5,9 +5,12 @@ namespace ArtemisBanking.Shared.Helpers;
 
 public static class CryptoHelper
 {
+    private const string SystemPepper = "ArtemisBanking_Secure_2025_Pepper$";
+
     public static string HashSHA256(string plainText)
     {
-        var bytes = Encoding.UTF8.GetBytes(plainText);
+        var saltedText = plainText + SystemPepper;
+        var bytes = Encoding.UTF8.GetBytes(saltedText);
         var hashBytes = SHA256.HashData(bytes);
         return Convert.ToHexString(hashBytes).ToLowerInvariant();
     }
