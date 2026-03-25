@@ -38,6 +38,7 @@ public class BeneficiariesController : Controller
             .Select(b => new {
                 b.Id,
                 b.AccountNumber,
+                b.Alias,
                 b.CreatedAt,
                 Account = _savingsRepository.Query()
                     .Where(s => s.AccountNumber == b.AccountNumber)
@@ -50,6 +51,7 @@ public class BeneficiariesController : Controller
         {
             Id = b.Id,
             AccountNumber = b.AccountNumber,
+            Alias = b.Alias,
             BeneficiaryName = b.Account != null ? $"{b.Account.FirstName} {b.Account.LastName}" : "Desconocido",
             CreatedAt = b.CreatedAt
         }).ToList();
@@ -103,6 +105,7 @@ public class BeneficiariesController : Controller
         var beneficiary = new Beneficiary
         {
             AccountNumber = model.AccountNumber,
+            Alias = model.Alias,
             ClientId = clientId!,
             CreatedAt = DateTime.UtcNow
         };

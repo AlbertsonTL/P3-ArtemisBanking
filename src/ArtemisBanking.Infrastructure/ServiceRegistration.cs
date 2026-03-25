@@ -5,6 +5,8 @@ using ArtemisBanking.Infrastructure.Mappings;
 using ArtemisBanking.Infrastructure.Persistence;
 using ArtemisBanking.Infrastructure.Repositories;
 using ArtemisBanking.Infrastructure.Services;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -55,6 +57,21 @@ public static class ServiceRegistration
 
         // Servicio de Transacciones
         services.AddScoped<ITransactionService, TransactionService>();
+
+        // Hangfire (#20) — Job diario para marcar cuotas vencidas
+        services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseSqlServerStorage(connStr, new SqlServerStorageOptions
+            {
+                CommandBatchMaxTimeout       = TimeSpan.FromMinutes(5),
+                SlidingInvisibilityTimeout   = TimeSpan.FromMinutes(5),
+                QueuePollInterval            = TimeSpan.Zero,
+                UseRecommendedIsolationLevel = true,
+                DisableGlobalLocks           = true
+            }));
+        services.AddScoped<LoanOverdueJob>();
 
         return services;
     }

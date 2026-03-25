@@ -42,7 +42,7 @@
                     <!-- Cédula e Email -->
                     <div class="col-md-6">
                         <label asp-for="IdentityCard" class="form-label fw-medium text-muted">Cédula de Identidad</label>
-                        <input asp-for="IdentityCard" class="form-control form-control-lg bg-light border-0" />
+                        <input asp-for="IdentityCard" id="IdentityCard" class="form-control form-control-lg bg-light border-0" placeholder="000-0000000-0" maxlength="13" />
                         <span asp-validation-for="IdentityCard" class="text-danger small"></span>
                     </div>
                     
@@ -58,7 +58,6 @@
                         <div class="col-12 mt-5">
                             <div class="p-4 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-25">
                                 <h5 class="fw-bold text-success mb-2"><i class="fas fa-hand-holding-usd me-2"></i> Adición de Fondos (Opcional)</h5>
-                                <p class="text-success text-opacity-75 mb-3 small">Si ingresas un monto y guardas, se acreditará inmediatamente a la cuenta de Ahorro Principal del cliente.</p>
                                 
                                 <label asp-for="MontoAdicional" class="form-label fw-bold text-success">Monto a Asignar en RD$</label>
                                 <div class="input-group input-group-lg">
@@ -84,4 +83,22 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function formatCedula(input) {
+            let val = input.value.replace(/\D/g, "").substring(0, 11);
+            let formatted = "";
+            if (val.length > 0) formatted += val.substring(0, 3);
+            if (val.length > 3) formatted += "-" + val.substring(3, 10);
+            if (val.length > 10) formatted += "-" + val.substring(10, 11);
+            input.value = formatted;
+        }
+
+        $('#IdentityCard').on('input', function() {
+            formatCedula(this);
+        });
+
+        $(document).ready(function() {
+            formatCedula(document.getElementById('IdentityCard'));
+        });
+    </script>
 }

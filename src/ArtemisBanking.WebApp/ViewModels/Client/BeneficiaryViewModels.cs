@@ -7,6 +7,7 @@ public class BeneficiaryListViewModel
     public int Id { get; set; }
     public string AccountNumber { get; set; } = string.Empty;
     public string BeneficiaryName { get; set; } = string.Empty;
+    public string Alias { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }
 
@@ -16,4 +17,9 @@ public class AddBeneficiaryViewModel
     [StringLength(9, MinimumLength = 9, ErrorMessage = "El número de cuenta debe tener 9 dígitos.")]
     [Display(Name = "Número de Cuenta")]
     public string AccountNumber { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "El apodo es requerido.")]
+    [StringLength(50, ErrorMessage = "El apodo no puede exceder los 50 caracteres.")]
+    [Display(Name = "Apodo o Alias (Ej: Mi Madre, Mi Ahorro)")]
+    public string Alias { get; set; } = string.Empty;
 }

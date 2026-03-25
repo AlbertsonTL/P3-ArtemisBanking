@@ -1,10 +1,14 @@
 using ArtemisBanking.Infrastructure;
 using ArtemisBanking.Infrastructure.Seeds;
+using ArtemisBanking.Infrastructure.Services;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddHangfireServer(); // Debe ir aquí donde Hangfire.AspNetCore está disponible
+
 
 builder.Services.ConfigureApplicationCookie(opt =>
 {
@@ -36,6 +40,15 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 await DefaultUserSeeder.SeedAsync(app.Services);
+
+// Hangfire Dashboard (solo en desarrollo) y job diario
+if (app.Environment.IsDevelopment())
+    app.UseHangfireDashboard("/hangfire");
+
+RecurringJob.AddOrUpdate<LoanOverdueJob>(
+    "mark-overdue-loan-entries",
+    job => job.MarkOverdueEntriesAsync(),
+    Cron.Daily); // Ejecuta cada día a medianoche UTC
 
 app.MapAreaControllerRoute(
     name: "AdminArea",

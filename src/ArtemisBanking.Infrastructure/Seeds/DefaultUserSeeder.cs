@@ -17,13 +17,13 @@ public static class DefaultUserSeeder
 
     private static readonly SeedUser[] DefaultUsers =
     {
-        new() { FirstName="Admin",   LastName="Principal", IdentityCard="00000000001",
+        new() { FirstName="Admin",   LastName="Principal", IdentityCard="000-0000000-1",
                 UserName="admin",   Email="admin@artemisbanking.com",   Password="Admin@12345",   Role=UserRole.Admin   },
-        new() { FirstName="Cajero",  LastName="Principal", IdentityCard="00000000002",
+        new() { FirstName="Cajero",  LastName="Principal", IdentityCard="000-0000000-2",
                 UserName="cajero",  Email="cajero@artemisbanking.com",  Password="Cajero@12345",  Role=UserRole.Cajero  },
-        new() { FirstName="Cliente", LastName="Demo",      IdentityCard="00000000003",
+        new() { FirstName="Cliente", LastName="Demo",      IdentityCard="000-0000000-3",
                 UserName="cliente", Email="cliente@artemisbanking.com", Password="Cliente@12345", Role=UserRole.Cliente,
-                InitialBalance=0m }
+                InitialBalance=50000m }
     };
 
     public static async Task SeedAsync(IServiceProvider serviceProvider)

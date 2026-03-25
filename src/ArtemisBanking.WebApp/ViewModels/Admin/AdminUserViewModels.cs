@@ -23,6 +23,7 @@ public class CreateUserViewModel
     public string LastName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "La cédula es requerida")]
+    [StringLength(13, MinimumLength = 13, ErrorMessage = "La cédula debe tener 11 dígitos (formato 000-0000000-0)")]
     public string IdentityCard { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "El email es requerido")]
@@ -52,6 +53,7 @@ public class EditUserViewModel
     public string LastName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "La cédula es requerida")]
+    [StringLength(13, MinimumLength = 13, ErrorMessage = "La cédula debe tener 11 dígitos (formato 000-0000000-0)")]
     public string IdentityCard { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "El email es requerido")]

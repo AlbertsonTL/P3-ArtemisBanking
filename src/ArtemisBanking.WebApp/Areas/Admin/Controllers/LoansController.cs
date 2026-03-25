@@ -98,9 +98,33 @@ public class LoansController : Controller
         return View(pagedModel);
     }
 
-    // ASSIGN 
+    // ASSIGN
     [HttpGet]
     public IActionResult Assign() => View(new AssignLoanViewModel());
+
+    [HttpGet]
+    public async Task<JsonResult> SearchClients(string term)
+    {
+        if (string.IsNullOrEmpty(term)) return Json(new List<object>());
+        
+        var query = _userManager.Users.Where(u => u.Role == UserRole.Cliente && u.IsActive);
+        
+        // Limpiamos guiones para comparar si el usuario los pone o no
+        var cleanTerm = term.Replace("-", "");
+        
+        var clients = await query
+            .Where(u => u.FirstName.Contains(term) || u.LastName.Contains(term) || u.IdentityCard.Replace("-", "").Contains(cleanTerm))
+            .Take(10)
+            .Select(u => new
+            {
+                id = u.Id,
+                fullName = $"{u.FirstName} {u.LastName}",
+                identityCard = u.IdentityCard
+            })
+            .ToListAsync();
+
+        return Json(clients);
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
