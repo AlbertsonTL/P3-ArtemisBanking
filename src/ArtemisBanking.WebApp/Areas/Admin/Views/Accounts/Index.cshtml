@@ -2,6 +2,8 @@
 @model IEnumerable<ArtemisBanking.WebApp.ViewModels.Admin.AccountListViewModel>
 @{
     ViewData["Title"] = "Gestión de Cuentas de Ahorro";
+    var currentPage = (int)(ViewBag.CurrentPage ?? 1);
+    var totalPages  = (int)(ViewBag.TotalPages  ?? 1);
 }
 
 <div class="container-fluid py-3">
@@ -66,6 +68,9 @@
                                 }
                             </td>
                             <td class="text-end px-4">
+                                <a asp-action="Details" asp-route-id="@acc.Id" class="btn btn-outline-info btn-sm rounded-pill px-3 me-1" title="Ver Transacciones">
+                                    <i class="fas fa-list"></i> Transacciones
+                                </a>
                                 @if(acc.IsActive)
                                 {
                                     if(acc.AccountType == AccountType.Main)
@@ -75,7 +80,8 @@
                                     else
                                     {
                                         <form asp-action="Cancel" asp-route-id="@acc.Id" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-medium" title="Cerrar y Transferir Fondos" onclick="return confirm('¿Está seguro de cerrar esta cuenta secundaria? El balance de RD$ @acc.Balance.ToString("N2") será enviado a la Principal de @acc.ClientName.');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-medium" title="Cerrar y Transferir Fondos" onclick="return confirm('¿Está seguro de cerrar esta cuenta secundaria?');">
                                                 Cerrar <i class="fas fa-times ms-1"></i>
                                             </button>
                                         </form>
@@ -97,5 +103,32 @@
                 </tbody>
             </table>
         </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="card-footer bg-white border-0 py-3 px-4">
+                <nav aria-label="Paginación cuentas">
+                    <ul class="pagination pagination-sm mb-0 justify-content-center">
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link rounded-pill me-1" asp-action="Index" asp-route-page="@(currentPage - 1)">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link mx-1 rounded-pill" asp-action="Index" asp-route-page="@i">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link rounded-pill ms-1" asp-action="Index" asp-route-page="@(currentPage + 1)">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                <p class="text-center text-muted small mt-2 mb-0">Página @currentPage de @totalPages</p>
+            </div>
+        }
     </div>
 </div>
