@@ -31,24 +31,33 @@ public class CardsController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1, int pageSize = 5)
     {
-        var model = await _cardRepository.Query()
+        var query = _cardRepository.Query()
             .Include(c => c.Client)
             .OrderByDescending(c => c.IsActive)
-            .ThenBy(c => c.Client.FirstName)
+            .ThenBy(c => c.Client.FirstName);
+
+        var totalItems = await query.CountAsync();
+
+        var model = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(c => new CardListViewModel
             {
-                Id = c.Id,
-                CardNumber = c.CardNumber,
-                ClientName = $"{c.Client.FirstName} {c.Client.LastName}",
-                IdentityCard = c.Client.IdentityCard,
-                CreditLimit = c.CreditLimit,
-                DebtAmount = c.DebtAmount,
+                Id             = c.Id,
+                CardNumber     = c.CardNumber,
+                ClientName     = $"{c.Client.FirstName} {c.Client.LastName}",
+                IdentityCard   = c.Client.IdentityCard,
+                CreditLimit    = c.CreditLimit,
+                DebtAmount     = c.DebtAmount,
                 ExpirationDate = c.ExpirationDate,
-                IsActive = c.IsActive
+                IsActive       = c.IsActive
             })
             .ToListAsync();
+
+        ViewBag.CurrentPage = page;
+        ViewBag.TotalPages  = (int)Math.Ceiling((double)totalItems / pageSize);
 
         return View(model);
     }
@@ -88,8 +97,8 @@ public class CardsController : Controller
             newCardNumber = AccountNumberGenerator.Generate16Digits();
         } while (await _cardRepository.ExistsAsync(c => c.CardNumber == newCardNumber));
 
-        // 2. Generar CVC crudo y Encriptarlo usando CryptoHelper de Dev 1
-        var rawCvc = new Random().Next(100, 999).ToString();
+        // 2. Generar CVC crudo criptográficamente seguro y Encriptarlo usando CryptoHelper de Dev 1
+        var rawCvc = AccountNumberGenerator.GenerateCvc();
         var hashedCvc = CryptoHelper.HashSHA256(rawCvc);
 
         // 3. Crear Entidad
