@@ -150,9 +150,16 @@ public class LoanService : ILoanService
         decimal cuotaMensual = CalcularCuotaFrancesa(dto.Amount, dto.AnnualInterestRate, dto.TermMonths);
 
         //  2. Construir entidad Préstamo
+        // Generar número de préstamo único (mismo patrón que AccountsController y CardsController)
+        string loanNumber;
+        do
+        {
+            loanNumber = AccountNumberGenerator.Generate9Digits();
+        } while (await _loanRepo.ExistsAsync(l => l.LoanNumber == loanNumber));
+
         var loan = new Loan
         {
-            LoanNumber        = AccountNumberGenerator.Generate9Digits(),
+            LoanNumber        = loanNumber,
             Amount            = dto.Amount,
             AnnualInterestRate = dto.AnnualInterestRate,
             TermMonths        = dto.TermMonths,
