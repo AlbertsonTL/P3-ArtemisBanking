@@ -57,7 +57,7 @@ public class TransactionsController : Controller
         var success = await _transactionService.TransferBetweenOwnAccountsAsync(GetClientId(), model.SourceAccountNumber, model.DestinationAccountNumber, model.Amount);
         if (success) { TempData["Success"] = "Transferencia entre cuentas propias realizada."; return RedirectToAction(nameof(Index)); }
         
-        TempData["Error"] = "Fis fondros insuficientes o cuenta inválida.";
+        TempData["Error"] = "Fondos insuficientes o cuenta inválida.";
         model.MyAccounts = await GetMyAccountsList();
         return View(model);
     }
@@ -234,23 +234,28 @@ public class TransactionsController : Controller
     private async Task<List<SelectListItem>> GetBeneficiariesList()
     {
         var clientId = GetClientId();
-        var beneficiaries = await _beneficiaryRepository.Query()
-            .Where(b => b.ClientId == clientId)
-            .OrderBy(b => b.CreatedAt)
-            .Select(b => new
+
+        // JOIN en un único query — evita N+1 queries (un subquery por beneficiario)
+        var result = await (
+            from b in _beneficiaryRepository.Query().Where(b => b.ClientId == clientId)
+            join s in _savingsRepository.Query().Include(s => s.Client)
+                on b.AccountNumber equals s.AccountNumber into joined
+            from s in joined.DefaultIfEmpty()
+            orderby b.CreatedAt
+            select new
             {
                 b.AccountNumber,
-                Account = _savingsRepository.Query()
-                    .Where(s => s.AccountNumber == b.AccountNumber)
-                    .Select(s => new { s.Client.FirstName, s.Client.LastName })
-                    .FirstOrDefault()
-            })
-            .ToListAsync();
+                FirstName = s != null ? s.Client.FirstName : null,
+                LastName  = s != null ? s.Client.LastName  : null
+            }
+        ).ToListAsync();
 
-        return beneficiaries.Select(b => new SelectListItem
+        return result.Select(x => new SelectListItem
         {
-            Value = b.AccountNumber,
-            Text = b.Account != null ? $"{b.Account.FirstName} {b.Account.LastName} ({b.AccountNumber})" : $"Abono a {b.AccountNumber}"
+            Value = x.AccountNumber,
+            Text  = x.FirstName != null
+                ? $"{x.FirstName} {x.LastName} ({x.AccountNumber})"
+                : $"Abono a {x.AccountNumber}"
         }).ToList();
     }
 }
