@@ -15,6 +15,7 @@ public class TransactionService : ITransactionService
     private readonly IGenericRepository<Transaction, int> _transactionRepository;
     private readonly IGenericRepository<CardConsumption, int> _consumptionRepository;
     private readonly IGenericRepository<AmortizationEntry, int> _amortizationRepository;
+    private readonly IGenericRepository<Beneficiary, int> _beneficiaryRepository;
     private readonly IEmailService _emailService;
     private readonly ILoanService _loanService;
 
@@ -25,6 +26,7 @@ public class TransactionService : ITransactionService
         IGenericRepository<Transaction, int> transactionRepository,
         IGenericRepository<CardConsumption, int> consumptionRepository,
         IGenericRepository<AmortizationEntry, int> amortizationRepository,
+        IGenericRepository<Beneficiary, int> beneficiaryRepository,
         IEmailService emailService,
         ILoanService loanService)
     {
@@ -34,6 +36,7 @@ public class TransactionService : ITransactionService
         _transactionRepository = transactionRepository;
         _consumptionRepository = consumptionRepository;
         _amortizationRepository = amortizationRepository;
+        _beneficiaryRepository = beneficiaryRepository;
         _emailService = emailService;
         _loanService = loanService;
     }
@@ -55,7 +58,7 @@ public class TransactionService : ITransactionService
         {
             Type = TransactionType.Debit,
             Amount = amount,
-            Category = TransactionCategory.SavingsTransfer,
+            Category = TransactionCategory.TransferOwnAccounts,
             Status = TransactionStatus.Approved,
             Origin = sourceAccountNumber,
             Beneficiary = destinationAccountNumber,
@@ -67,7 +70,7 @@ public class TransactionService : ITransactionService
         {
             Type = TransactionType.Credit,
             Amount = amount,
-            Category = TransactionCategory.SavingsTransfer,
+            Category = TransactionCategory.TransferOwnAccounts,
             Status = TransactionStatus.Approved,
             Origin = sourceAccountNumber,
             Beneficiary = destinationAccountNumber,
@@ -81,7 +84,67 @@ public class TransactionService : ITransactionService
 
     public async Task<bool> TransferToBeneficiaryAsync(string senderClientId, string sourceAccountNumber, string destinationAccountNumber, decimal amount)
     {
-        return await ExpressTransactionAsync(senderClientId, sourceAccountNumber, destinationAccountNumber, amount);
+        // 1. Validar que el destino esté en la lista de beneficiarios del cliente
+        var isBeneficiary = await _beneficiaryRepository.ExistsAsync(
+            b => b.ClientId == senderClientId && b.AccountNumber == destinationAccountNumber);
+
+        if (!isBeneficiary) return false;
+
+        // 2. Cargar cuentas
+        var source = await _savingsRepository.Query().Include(s => s.Client).FirstOrDefaultAsync(s => s.AccountNumber == sourceAccountNumber && s.ClientId == senderClientId && s.IsActive);
+        var dest = await _savingsRepository.Query().Include(s => s.Client).FirstOrDefaultAsync(s => s.AccountNumber == destinationAccountNumber && s.IsActive);
+
+        if (source == null || dest == null || source.Balance < amount) return false;
+
+        source.Balance -= amount;
+        dest.Balance += amount;
+
+        _savingsRepository.Update(source);
+        _savingsRepository.Update(dest);
+
+        // 3. Registrar transacciones con categoría correcta TransferToBeneficiary
+        await _transactionRepository.AddAsync(new Transaction
+        {
+            Type = TransactionType.Debit,
+            Amount = amount,
+            Category = TransactionCategory.TransferToBeneficiary,
+            Status = TransactionStatus.Approved,
+            Origin = sourceAccountNumber,
+            Beneficiary = destinationAccountNumber,
+            SavingsAccountId = source.Id,
+            Date = DateTime.UtcNow
+        });
+
+        await _transactionRepository.AddAsync(new Transaction
+        {
+            Type = TransactionType.Credit,
+            Amount = amount,
+            Category = TransactionCategory.TransferToBeneficiary,
+            Status = TransactionStatus.Approved,
+            Origin = sourceAccountNumber,
+            Beneficiary = destinationAccountNumber,
+            SavingsAccountId = dest.Id,
+            Date = DateTime.UtcNow
+        });
+
+        await _savingsRepository.SaveChangesAsync();
+
+        // 4. Correos específicos de transferencia a beneficiario
+        await _emailService.SendAsync(new EmailRequestDto
+        {
+            To = source.Client.Email!,
+            Subject = "Transferencia a Beneficiario Enviada",
+            Body = EmailTemplates.TransactionNotification($"{source.Client.FirstName} {source.Client.LastName}", "Transferencia a Beneficiario", amount, destinationAccountNumber)
+        });
+
+        await _emailService.SendAsync(new EmailRequestDto
+        {
+            To = dest.Client.Email!,
+            Subject = "Transferencia Recibida de Beneficiario",
+            Body = EmailTemplates.TransactionNotification($"{dest.Client.FirstName} {dest.Client.LastName}", "Transferencia Recibida de Beneficiario", amount, sourceAccountNumber)
+        });
+
+        return true;
     }
 
     public async Task<bool> ExpressTransactionAsync(string senderClientId, string sourceAccountNumber, string destinationAccountNumber, decimal amount)
@@ -145,10 +208,14 @@ public class TransactionService : ITransactionService
         var source = await _savingsRepository.Query().FirstOrDefaultAsync(s => s.AccountNumber == sourceAccountNumber && s.ClientId == clientId && s.IsActive);
         var card = await _cardRepository.Query().Include(c => c.Client).FirstOrDefaultAsync(c => c.Id == creditCardId && c.ClientId == clientId && c.IsActive);
 
-        if (source == null || card == null || source.Balance < amount) return false;
+        if (source == null || card == null) return false;
 
+        // Calcular el monto real a cobrar ANTES de validar el balance
         var paymentAmount = Math.Min(amount, card.DebtAmount);
         if (paymentAmount <= 0) return false;
+
+        // Validar balance contra el monto real, no contra el monto ingresado por el usuario
+        if (source.Balance < paymentAmount) return false;
 
         source.Balance -= paymentAmount;
         card.DebtAmount -= paymentAmount;
