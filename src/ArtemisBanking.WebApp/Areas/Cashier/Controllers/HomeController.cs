@@ -37,8 +37,8 @@ public class HomeController : Controller
         // Contar operaciones por tipo
         var depositsCount = todayTransactions.Count(t => t.Category == TransactionCategory.CashierDeposit);
         var withdrawalsCount = todayTransactions.Count(t => t.Category == TransactionCategory.CashierWithdrawal);
-        var creditCardPaymentsCount = todayTransactions.Count(t => t.Category == TransactionCategory.CreditCardPayment && t.CashierId != null);
-        var loanPaymentsCount = todayTransactions.Count(t => t.Category == TransactionCategory.LoanPayment && t.CashierId != null);
+        var creditCardPaymentsCount = todayTransactions.Count(t => t.Category == TransactionCategory.CashierCreditCardPayment);
+        var loanPaymentsCount = todayTransactions.Count(t => t.Category == TransactionCategory.CashierLoanPayment);
 
         // Calcular montos totales
         var totalDeposited = todayTransactions
