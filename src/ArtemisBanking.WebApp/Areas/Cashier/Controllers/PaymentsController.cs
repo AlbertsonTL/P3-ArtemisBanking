@@ -79,7 +79,7 @@ public class PaymentsController : Controller
             return View(model);
         }
 
-        decimal actualAmountToCharge = Math.Min(model.Amount, creditCard.CurrentDebt);
+        decimal actualAmountToCharge = Math.Min(model.Amount, creditCard.DebtAmount);
 
         HttpContext.Session.SetString("PaymentSourceAccountNumber", model.AccountNumber);
         HttpContext.Session.SetString("PaymentCardNumber", model.CardNumber);
@@ -87,7 +87,7 @@ public class PaymentsController : Controller
         HttpContext.Session.SetDecimal("PaymentActualAmountToCharge", actualAmountToCharge);
         HttpContext.Session.SetString("PaymentType", "CreditCard");
         HttpContext.Session.SetString("PaymentCardHolderName", $"{creditCard.Client.FirstName} {creditCard.Client.LastName}");
-        HttpContext.Session.SetDecimal("PaymentCardCurrentDebt", creditCard.CurrentDebt);
+        HttpContext.Session.SetDecimal("PaymentCardCurrentDebt", creditCard.DebtAmount);
 
         return RedirectToAction(nameof(ConfirmPayment));
     }
@@ -248,8 +248,8 @@ public class PaymentsController : Controller
             sourceAccount.Balance -= actualAmountToCharge;
             _savingsRepository.Update(sourceAccount);
 
-            creditCard.CurrentDebt -= actualAmountToCharge;
-            if (creditCard.CurrentDebt < 0) creditCard.CurrentDebt = 0;
+            creditCard.DebtAmount -= actualAmountToCharge;
+            if (creditCard.DebtAmount < 0) creditCard.DebtAmount = 0;
             _cardRepository.Update(creditCard);
 
             await _transactionRepository.AddAsync(new Transaction
