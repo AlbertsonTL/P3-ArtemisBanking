@@ -16,7 +16,9 @@ public static class AccountNumberGenerator
         return $"{p1}{p2}";
     }
 
-    /// <summary>Fecha de expiración de tarjeta en formato MM/yy sumando N años.</summary>
+    /// <summary>Genera CVC de 3 dígitos criptográficamente seguro.</summary>
+    public static string GenerateCvc()
+        => RandomNumberGenerator.GetInt32(100, 1000).ToString();
     public static string GetExpirationDate(int yearsToAdd = 3)
         => DateTime.UtcNow.AddYears(yearsToAdd).ToString("MM/yy");
 }
