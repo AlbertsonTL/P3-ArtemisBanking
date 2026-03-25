@@ -1,6 +1,8 @@
 @model IEnumerable<ArtemisBanking.WebApp.ViewModels.Admin.CardListViewModel>
 @{
     ViewData["Title"] = "Gestión de Tarjetas Crédito";
+    var currentPage = (int)(ViewBag.CurrentPage ?? 1);
+    var totalPages  = (int)(ViewBag.TotalPages  ?? 1);
 }
 
 <div class="container-fluid py-3">
@@ -116,5 +118,32 @@
                 </tbody>
             </table>
         </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="card-footer bg-white border-0 py-3 px-4">
+                <nav aria-label="Paginación tarjetas">
+                    <ul class="pagination pagination-sm mb-0 justify-content-center">
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link rounded-pill me-1" asp-action="Index" asp-route-page="@(currentPage - 1)">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link mx-1 rounded-pill" asp-action="Index" asp-route-page="@i">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link rounded-pill ms-1" asp-action="Index" asp-route-page="@(currentPage + 1)">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                <p class="text-center text-muted small mt-2 mb-0">Página @currentPage de @totalPages</p>
+            </div>
+        }
     </div>
 </div>
