@@ -34,23 +34,69 @@ public class AccountsController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1, int pageSize = 5)
     {
-        var model = await _savingsRepository.Query()
+        var query = _savingsRepository.Query()
             .Include(a => a.Client)
             .OrderByDescending(a => a.AccountType == AccountType.Main)
-            .ThenByDescending(a => a.IsActive)
+            .ThenByDescending(a => a.IsActive);
+
+        var totalItems = await query.CountAsync();
+
+        var model = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(a => new AccountListViewModel
             {
-                Id = a.Id,
+                Id            = a.Id,
                 AccountNumber = a.AccountNumber,
-                ClientName = $"{a.Client.FirstName} {a.Client.LastName}",
-                IdentityCard = a.Client.IdentityCard,
-                AccountType = a.AccountType,
-                Balance = a.Balance,
-                IsActive = a.IsActive
+                ClientName    = $"{a.Client.FirstName} {a.Client.LastName}",
+                IdentityCard  = a.Client.IdentityCard,
+                AccountType   = a.AccountType,
+                Balance       = a.Balance,
+                IsActive      = a.IsActive
             })
             .ToListAsync();
+
+        ViewBag.CurrentPage = page;
+        ViewBag.TotalPages  = (int)Math.Ceiling((double)totalItems / pageSize);
+
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Details(int id)
+    {
+        var account = await _savingsRepository.Query()
+            .Include(a => a.Client)
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (account == null) return NotFound();
+
+        var transactions = await _transactionRepository.Query()
+            .Where(t => t.SavingsAccountId == id)
+            .OrderByDescending(t => t.Date)
+            .ToListAsync();
+
+        var model = new AccountDetailsViewModel
+        {
+            AccountNumber = account.AccountNumber,
+            ClientName    = $"{account.Client.FirstName} {account.Client.LastName}",
+            IdentityCard  = account.Client.IdentityCard,
+            AccountType   = account.AccountType,
+            Balance       = account.Balance,
+            IsActive      = account.IsActive,
+            Transactions  = transactions.Select(t => new TransactionItemViewModel
+            {
+                Date        = t.Date,
+                Type        = t.Type,
+                Amount      = t.Amount,
+                Category    = t.Category,
+                Origin      = t.Origin,
+                Beneficiary = t.Beneficiary,
+                Status      = t.Status
+            }).ToList()
+        };
 
         return View(model);
     }
