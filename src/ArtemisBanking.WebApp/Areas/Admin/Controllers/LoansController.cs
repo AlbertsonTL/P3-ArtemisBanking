@@ -37,7 +37,7 @@ public class LoansController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(string searchCedula, string filterState)
+    public async Task<IActionResult> Index(string searchCedula, string filterState, int page = 1, int pageSize = 5)
     {
         var query = _loanRepository.Query()
             .Include(l => l.Client)
@@ -63,7 +63,8 @@ public class LoansController : Controller
             MonthlyPayment     = l.MonthlyPayment,
             IsActive           = l.IsActive,
             CreatedAt          = l.CreatedAt,
-            RemainingDebt      = l.AmortizationEntries.Where(e => !e.IsPaid).Sum(e => e.QuotaAmount)
+            RemainingDebt      = l.AmortizationEntries.Where(e => !e.IsPaid).Sum(e => e.QuotaAmount),
+            HasLateEntries     = l.AmortizationEntries.Any(e => e.IsLate && !e.IsPaid)
         }).ToList();
 
         if (!string.IsNullOrEmpty(filterState))
@@ -78,15 +79,23 @@ public class LoansController : Controller
             }
             else if (filterState == "EnMora")
             {
-                // En ArtemisBanking, asumiremos que si un préstamo no está activo y aún debe, está en mora según el HTML
-                model = model.Where(l => !l.IsActive && l.RemainingDebt > 0).ToList();
+                // Un préstamo en mora tiene cuotas activas marcadas como IsLate por el job de background
+                model = model.Where(l => l.HasLateEntries).ToList();
             }
         }
 
-        ViewBag.SearchCedula = searchCedula;
-        ViewBag.FilterState = filterState;
+        var totalItems = model.Count;
+        var pagedModel = model
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
 
-        return View(model);
+        ViewBag.SearchCedula = searchCedula;
+        ViewBag.FilterState  = filterState;
+        ViewBag.CurrentPage  = page;
+        ViewBag.TotalPages   = (int)Math.Ceiling((double)totalItems / pageSize);
+
+        return View(pagedModel);
     }
 
     // ASSIGN 

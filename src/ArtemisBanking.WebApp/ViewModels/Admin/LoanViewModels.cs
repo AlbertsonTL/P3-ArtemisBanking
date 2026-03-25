@@ -21,7 +21,10 @@ public class LoanListViewModel
     public DateTime CreatedAt { get; set; }
     
     // Deuda Restante (calculada)
-    public decimal RemainingDebt { get; set; } 
+    public decimal RemainingDebt { get; set; }
+    
+    // Indica si el préstamo tiene cuotas vencidas (mora real según IsLate de AmortizationEntry)
+    public bool HasLateEntries { get; set; }
 }
 
 public class AssignLoanViewModel
