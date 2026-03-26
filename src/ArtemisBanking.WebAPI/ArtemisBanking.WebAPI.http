@@ -1,6 +1,444 @@
-@ArtemisBanking.WebAPI_HostAddress = http://localhost:5018
+### ArtemisBanking WebAPI - Archivo de pruebas .http
+### Compatible con: Thunder Client (VS Code) y REST Client (VS Code)
+###
+### INSTRUCCIONES:
+### 1. Ejecutar primero "Login Admin" y copiar el JWT
+### 2. Reemplazar @adminToken con el JWT copiado
+### 3. Para requests que requieren un ID, reemplazar los placeholders indicados
 
-GET {{ArtemisBanking.WebAPI_HostAddress}}/weatherforecast/
-Accept: application/json
+@baseUrl = https://localhost:7001
+@adminToken = PASTE_JWT_TOKEN_HERE_AFTER_LOGIN
+
+# AUTH - ACCOUNT
+
+### [1] Login como Admin - EJECUTAR PRIMERO para obtener el token
+POST {{baseUrl}}/api/Account/login
+Content-Type: application/json
+
+{
+  "userName": "admin",
+  "password": "Admin@1234"
+}
 
 ###
+
+### [2] Login como Cliente
+POST {{baseUrl}}/api/Account/login
+Content-Type: application/json
+
+{
+  "userName": "client",
+  "password": "Client@1234"
+}
+
+###
+
+### [3] Confirmar cuenta (usar token recibido por email al crear usuario)
+POST {{baseUrl}}/api/Account/confirm
+Content-Type: application/json
+
+{
+  "token": "PASTE_CONFIRMATION_TOKEN_HERE"
+}
+
+###
+
+### [4] Solicitar token de reset de contraseña (desactiva usuario temporalmente)
+POST {{baseUrl}}/api/Account/get-reset-token
+Content-Type: application/json
+
+{
+  "userName": "admin"
+}
+
+###
+
+### [5] Resetear contraseña (usar token recibido por email)
+POST {{baseUrl}}/api/Account/reset-password
+Content-Type: application/json
+
+{
+  "userId": "PASTE_USER_ID_HERE",
+  "token": "PASTE_RESET_TOKEN_HERE",
+  "password": "NewPass@1234",
+  "confirmPassword": "NewPass@1234"
+}
+
+# USERS - ADMIN ONLY
+# Roles: 0=Admin | 1=Cajero | 2=Cliente | 4=Comercio
+
+### [6] Listar todos los usuarios (paginado)
+GET {{baseUrl}}/api/Users?page=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [7] Listar usuarios filtrado por rol (2 = Cliente)
+GET {{baseUrl}}/api/Users?page=1&pageSize=10&rol=2
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [8] Listar usuarios de comercio
+GET {{baseUrl}}/api/Users/commerce?page=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [9] Obtener usuario por ID
+# Reemplaza el ID con el real obtenido en el listado
+GET {{baseUrl}}/api/Users/PASTE_USER_ID_HERE
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [10] Crear usuario Cliente (se crea cuenta de ahorro principal automáticamente)
+POST {{baseUrl}}/api/Users
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "firstName": "Juan",
+  "lastName": "Pérez",
+  "userName": "jperez",
+  "email": "jperez@mail.com",
+  "password": "Pass@1234",
+  "identityCard": "00112233445",
+  "role": 2,
+  "initialAmount": 5000
+}
+
+###
+
+### [11] Crear usuario Cajero
+POST {{baseUrl}}/api/Users
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "firstName": "Maria",
+  "lastName": "Lopez",
+  "userName": "mlopez",
+  "email": "mlopez@mail.com",
+  "password": "Pass@1234",
+  "identityCard": "00112233446",
+  "role": 1,
+  "initialAmount": 0
+}
+
+###
+
+### [12] Crear usuario de Comercio
+POST {{baseUrl}}/api/Users/commerce
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "firstName": "Tienda",
+  "lastName": "Online",
+  "userName": "tienda01",
+  "email": "tienda01@mail.com",
+  "password": "Pass@1234",
+  "identityCard": "",
+  "role": 4,
+  "initialAmount": 0
+}
+
+###
+
+### [13] Actualizar usuario (password vacío = no cambia contraseña)
+PUT {{baseUrl}}/api/Users/PASTE_USER_ID_HERE
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "firstName": "Juan",
+  "lastName": "Pérez Actualizado",
+  "userName": "jperez",
+  "email": "jperez_new@mail.com",
+  "identityCard": "00112233445",
+  "password": "",
+  "additionalAmount": 1000
+}
+
+###
+
+### [14] Activar usuario
+PATCH {{baseUrl}}/api/Users/PASTE_USER_ID_HERE/status
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "status": true
+}
+
+###
+
+### [15] Desactivar usuario
+PATCH {{baseUrl}}/api/Users/PASTE_USER_ID_HERE/status
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "status": false
+}
+
+# SAVINGS ACCOUNTS - ADMIN ONLY
+# AccountType: 0=Main | 1=Secondary
+
+### [16] Listar todas las cuentas de ahorro
+GET {{baseUrl}}/api/savings-account?page=1
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [17] Listar cuentas activas
+GET {{baseUrl}}/api/savings-account?page=1&activa=true
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [18] Listar cuentas por cédula del cliente
+GET {{baseUrl}}/api/savings-account?page=1&cedula=00112233445
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [19] Listar cuentas de tipo secundaria
+GET {{baseUrl}}/api/savings-account?page=1&tipo=1
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [20] Crear cuenta de ahorro secundaria para un cliente
+# Requiere que el cliente ya tenga cuenta principal (se crea automáticamente al crear el usuario)
+POST {{baseUrl}}/api/savings-account
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "clienteId": "PASTE_CLIENT_ID_HERE",
+  "saldoInicial": 2500
+}
+
+###
+
+### [21] Ver transacciones de una cuenta (reemplaza el número de cuenta)
+GET {{baseUrl}}/api/savings-account/123456789/transactions
+Authorization: Bearer {{adminToken}}
+
+# CREDIT CARDS - ADMIN ONLY
+
+### [22] Listar todas las tarjetas
+GET {{baseUrl}}/api/credit-card?page=1
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [23] Listar tarjetas activas
+GET {{baseUrl}}/api/credit-card?page=1&estado=activa
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [24] Listar tarjetas canceladas
+GET {{baseUrl}}/api/credit-card?page=1&estado=cancelada
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [25] Ver detalle de tarjeta con consumos
+GET {{baseUrl}}/api/credit-card/1
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [26] Asignar tarjeta de crédito a cliente
+# El cliente no puede tener ya una tarjeta activa
+POST {{baseUrl}}/api/credit-card
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "clienteId": "PASTE_CLIENT_ID_HERE",
+  "limite": 50000
+}
+
+###
+
+### [27] Actualizar límite de crédito
+PATCH {{baseUrl}}/api/credit-card/1/limit
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "nuevoLimite": 75000
+}
+
+###
+
+### [28] Cancelar tarjeta (solo si deuda = 0)
+PATCH {{baseUrl}}/api/credit-card/1/cancel
+Authorization: Bearer {{adminToken}}
+
+# LOANS - ADMIN ONLY
+
+### [29] Listar todos los préstamos
+GET {{baseUrl}}/api/loan?page=1
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [30] Listar préstamos activos
+GET {{baseUrl}}/api/loan?page=1&estado=activos
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [31] Listar préstamos completados
+GET {{baseUrl}}/api/loan?page=1&estado=completados
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [32] Listar préstamos por cédula del cliente
+GET {{baseUrl}}/api/loan?page=1&cedula=00112233445
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [33] Ver detalle de préstamo con tabla de amortización
+GET {{baseUrl}}/api/loan/1
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [34] Crear préstamo para un cliente
+# Si el cliente tiene alto riesgo crediticio → retorna 409 Conflict
+# El cliente no puede tener ya un préstamo activo
+POST {{baseUrl}}/api/loan
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "clienteId": "PASTE_CLIENT_ID_HERE",
+  "monto": 100000,
+  "plazo": 12,
+  "tasaAnual": 15.5
+}
+
+###
+
+### [35] Actualizar tasa de interés del préstamo (recalcula cuotas pendientes)
+PATCH {{baseUrl}}/api/loan/1/rate
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "tasaAnual": 12.0
+}
+
+# 🛒 COMMERCE - ADMIN ONLY
+
+### [36] Listar todos los comercios activos
+GET {{baseUrl}}/api/commerce?page=1
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [37] Ver detalle de un comercio
+GET {{baseUrl}}/api/commerce/1
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [38] Crear comercio
+POST {{baseUrl}}/api/commerce
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "SuperTienda RD",
+  "isActive": true
+}
+
+###
+
+### [39] Actualizar nombre del comercio
+PUT {{baseUrl}}/api/commerce/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "SuperTienda RD Actualizada"
+}
+
+###
+
+### [40] Desactivar comercio (también desactiva sus usuarios en cascada)
+PATCH {{baseUrl}}/api/commerce/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "status": false
+}
+
+###
+
+### [41] Activar comercio
+PATCH {{baseUrl}}/api/commerce/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "status": true
+}
+
+# HERMES PAY - Admin y Comercio
+
+### [42] Ver transacciones de un comercio (Admin ve cualquier comercioId)
+GET {{baseUrl}}/pay/get-transactions/1?page=1
+Authorization: Bearer {{adminToken}}
+
+###
+
+### [43] Procesar pago con tarjeta de crédito
+# Requiere: número de tarjeta real (16 dígitos), mes/año de expiración y CVC en texto plano
+# El CVC en la BD está hasheado con SHA-256; este endpoint valida el plain CVC contra el hash
+# IMPORTANTE: El CVC en texto plano solo se conoce en el momento de creación de la tarjeta
+POST {{baseUrl}}/pay/process-payment/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "cardNumber": "PASTE_16_DIGIT_CARD_NUMBER",
+  "monthExpirationCard": 6,
+  "yearExpirationCard": 28,
+  "cvc": "123",
+  "transactionAmount": 1500
+}
+
+# NOTAS IMPORTANTES
+# 
+# 1. FLUJO RECOMENDADO PARA PRUEBA COMPLETA:
+#    [1] Login Admin → copiar JWT → pegar en @adminToken
+#    [10] Crear Cliente → copiar userId del response
+#    [20] Crear cuenta secundaria (usar clientId del paso anterior)
+#    [26] Asignar tarjeta de crédito al cliente
+#    [34] Crear préstamo al cliente
+#    [38] Crear un comercio
+#    [43] Procesar pago Hermes Pay
+#
+# 2. ACTIVAR USUARIO después de crearlo:
+#    Los usuarios se crean con IsActive=false. Usa [14] para activarlos
+#    (en producción se activan via email de confirmación)
+#
+# 3. PUERTO DE LA API:
+#    Verifica el puerto real en Properties/launchSettings.json de WebAPI
+#    Actualiza @baseUrl si es diferente a 7001
+#
+# 4. CVC PARA TESTING:
+#    El CVC se hashea con SHA256 al crear la tarjeta.
+#    Para pruebas, usa "123" como CVC al procesar pagos con tarjetas de prueba.
+#    En producción el CVC real solo lo conoce el sistema al momento de asignación.
