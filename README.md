@@ -21,30 +21,19 @@ ArtemisBanking/
     ├── ArtemisBanking.Application     ← Interfaces, DTOs, contratos de servicios
     ├── ArtemisBanking.Shared          ← Helpers, modelos transversales (sin dependencias)
     ├── ArtemisBanking.Infrastructure  ← EF Core, Identity, Repositorios, AutoMapper, Email
+    ├── ArtemisBanking.Functions       ← Azure Function con CRON JOB
     ├── ArtemisBanking.WebApp          ← MVC (Admin · Cliente · Cajero)
     └── ArtemisBanking.WebAPI          ← REST API con JWT + Swagger
-```
-
-**Flujo de dependencias:**
-```
-WebApp / WebAPI
-      ↓
-Infrastructure  →  Shared
-      ↓
-Application
-      ↓
-Domain
 ```
 
 ---
 
 ## 👨‍💻 Equipo
 
-| Dev | Área | Ramas |
-|-----|------|-------|
-| Dev 1 — Albertson | Backend · Auth · API | `feature/foundation` `feature/auth-system` `feature/web-api` |
-| Dev 2 — Gerald | Admin Panel | `feature/admin-dashboard` `feature/admin-users` |
-| Dev 3 — Darwin | Cliente · Cajero · QA | `feature/client-home` `feature/cashier-module` |
+| Dev | Área  |
+|-----|-------|
+| Dev 1 — Albertson | Backend · Auth · API | 2024-1949 |
+| Dev 2 — Darwin | Cliente · Cajero · QA | 2024-0044 |
 
 ---
 
@@ -199,42 +188,6 @@ develop       ← integración continua
 feature/*     ← desarrollo de funcionalidades
 hotfix/*      ← correcciones urgentes en producción
 ```
-
-**Flujo estándar:**
-```bash
-git checkout develop
-git pull origin develop
-git checkout -b feature/nombre-funcionalidad
-
-# ... trabajar y hacer commits ...
-
-git push origin feature/nombre-funcionalidad
-# Abrir Pull Request hacia develop en GitHub
-```
-
-**Nunca hacer push directo a `main` o `develop`.**
-
----
-
-## 📊 Milestones
-
-| Milestone | Objetivo | Dev responsable |
-|-----------|---------|----------------|
-| M1 | Fundamentos (Onion, Identity, Domain) | Dev 1 |
-| M2 | Admin Panel | Dev 2 |
-| M3 | Módulo Cliente | Dev 3 |
-| M4 | Módulo Cajero | Dev 3 |
-| M5 | API REST + QA + Deploy | Dev 1 + Dev 3 |
-
----
-
-## 📜 Notas importantes
-
-- Todos los montos financieros usan `decimal(18,2)` — nunca `float` ni `double`.
-- El CVC de tarjetas se almacena cifrado con **SHA-256** (nunca en texto plano).
-- Los números de cuenta (9 dígitos) y tarjeta (16 dígitos) son únicos en todo el sistema.
-- Las migraciones **no se suben al repositorio** — cada dev las genera localmente con `dotnet ef migrations add`.
-
 ---
 
 *Proyecto Final Programación 3 — ITLA 2026 © Artemis Banking Team*

@@ -117,9 +117,7 @@ public class AccountController : ControllerBase
         if (user == null)
             return BadRequest(new { message = "Usuario no existe" });
 
-        user.IsActive = false;
-        await _userManager.UpdateAsync(user);
-
+        // No desactivar el usuario al pedir reset — solo genera el token.
         var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
 
         try

@@ -105,6 +105,7 @@ public class AccountController : Controller
             return View(model);
         }
 
+        // Generar token (no se desactiva el usuario -- el token de reset expira solo)
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
         var resetLink = Url.Action("ResetPassword", "Account",
@@ -159,10 +160,16 @@ public class AccountController : Controller
             return View(model);
         }
 
-        if (!user.IsActive)
+        // Reactivar usuario y confirmar email
+        user.IsActive = true;
+        user.EmailConfirmed = true;
+        var updateResult = await _userManager.UpdateAsync(user);
+
+        if (!updateResult.Succeeded)
         {
-            user.IsActive = true;
-            await _userManager.UpdateAsync(user);
+            foreach (var error in updateResult.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
+            return View(model);
         }
 
         TempData["Success"] = "Contraseña restablecida correctamente. Ahora puedes iniciar sesión.";
