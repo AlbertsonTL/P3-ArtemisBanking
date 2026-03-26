@@ -7,6 +7,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Data;
 
 namespace ArtemisBanking.Infrastructure.Seeds;
  
@@ -17,13 +18,12 @@ public static class DefaultUserSeeder
 
     private static readonly SeedUser[] DefaultUsers =
     {
-        new() { FirstName="Admin",   LastName="Principal", IdentityCard="000-0000000-1",
-                UserName="admin",   Email="admin@artemisbanking.com",   Password="Admin@12345",   Role=UserRole.Admin   },
-        new() { FirstName="Cajero",  LastName="Principal", IdentityCard="000-0000000-2",
-                UserName="cajero",  Email="cajero@artemisbanking.com",  Password="Cajero@12345",  Role=UserRole.Cajero  },
-        new() { FirstName="Cliente", LastName="Demo",      IdentityCard="000-0000000-3",
-                UserName="cliente", Email="cliente@artemisbanking.com", Password="Cliente@12345", Role=UserRole.Cliente,
-                InitialBalance=50000m }
+        new() { FirstName="Admin", LastName="Principal", IdentityCard="000-0000000-1",
+                UserName="admin", Email="1000.gerald.manuel@gmail.com", Password="Admin@12345", Role=UserRole.Admin },
+        new() { FirstName="Cajero", LastName="Principal", IdentityCard="000-0000000-2",
+                UserName="cajero", Email="cajero@artemisbanking.com", Password="Cajero@12345", Role=UserRole.Cajero },
+        new() { FirstName="Cliente", LastName="Demo", IdentityCard="000-0000000-3",
+                UserName="cliente", Email="cliente@artemisbanking.com", Password="Cliente@12345", Role=UserRole.Cliente, InitialBalance=50000m }
     };
 
     public static async Task SeedAsync(IServiceProvider serviceProvider)
@@ -39,10 +39,6 @@ public static class DefaultUserSeeder
         await SeedUsersAsync(userManager, dbContext, logger);
     }
 
-    /// <summary>
-    /// Verifica la existencia de la BD contra sys.databases ANTES de que EF Core
-    /// intente cualquier operacion. Usa una conexion ADO.NET independiente apuntando
-    /// </summary>
     private static async Task ApplyMigrationsAsync(AppDbContext dbContext, ILogger logger)
     {
         var dbExists = await DatabaseExistsAsync(dbContext, logger);
@@ -55,7 +51,22 @@ public static class DefaultUserSeeder
             return;
         }
 
-        logger.LogInformation("Base de datos existente detectada. Verificando migraciones pendientes...");
+        logger.LogInformation("Base de datos existente detectada. Verificando estado de tablas Identity...");
+
+        // Detecta el escenario de migracion vacia: la migracion esta registrada
+        // en __EFMigrationsHistory pero las tablas de Identity no existen porque
+        // el metodo Up() estaba vacio. En ese caso, se elimina el registro y se
+        // re-aplica la migracion correcta.
+        var identityTablesExist = await IdentityTablesExistAsync(dbContext, logger);
+        if (!identityTablesExist)
+        {
+            logger.LogWarning(
+                "Las tablas de Identity no existen aunque la migracion ya esta registrada. " +
+                "Se detecta migracion vacia anterior. Eliminando registro y re-aplicando...");
+
+            await RemoveMigrationHistoryAsync(dbContext, logger);
+        }
+
         var pending = (await dbContext.Database.GetPendingMigrationsAsync()).ToList();
 
         if (pending.Count == 0)
@@ -96,6 +107,46 @@ public static class DefaultUserSeeder
         }
     }
 
+    private static async Task<bool> IdentityTablesExistAsync(AppDbContext dbContext, ILogger logger)
+    {
+        try
+        {
+            var conn = dbContext.Database.GetDbConnection();
+            if (conn.State != ConnectionState.Open)
+                await conn.OpenAsync();
+
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT COUNT(1) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'AspNetRoles'";
+            var result = await cmd.ExecuteScalarAsync();
+            return Convert.ToInt32(result) > 0;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "No se pudo verificar existencia de tablas Identity; se asume que no existen.");
+            return false;
+        }
+    }
+
+    private static async Task RemoveMigrationHistoryAsync(AppDbContext dbContext, ILogger logger)
+    {
+        try
+        {
+            var conn = dbContext.Database.GetDbConnection();
+            if (conn.State != ConnectionState.Open)
+                await conn.OpenAsync();
+
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = "DELETE FROM [__EFMigrationsHistory]";
+            var rows = await cmd.ExecuteNonQueryAsync();
+            logger.LogInformation("Se eliminaron {Rows} registro(s) de __EFMigrationsHistory.", rows);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error al limpiar __EFMigrationsHistory.");
+            throw;
+        }
+    }
+
     private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager, ILogger logger)
     {
         foreach (var role in Roles)
@@ -118,17 +169,23 @@ public static class DefaultUserSeeder
 
             var user = new ApplicationUser
             {
-                FirstName = seed.FirstName, LastName = seed.LastName,
-                IdentityCard = seed.IdentityCard, UserName = seed.UserName,
-                Email = seed.Email, EmailConfirmed = true,
-                IsActive = true, Role = seed.Role
+                FirstName    = seed.FirstName, LastName     = seed.LastName,
+                IdentityCard = seed.IdentityCard, UserName  = seed.UserName,
+                Email        = seed.Email, EmailConfirmed   = true,
+                IsActive     = true, Role                   = seed.Role
             };
 
             var result = await userManager.CreateAsync(user, seed.Password);
-            if (!result.Succeeded) { logger.LogError("Error creando {U}", seed.UserName); continue; }
+            if (!result.Succeeded)
+            {
+                // Loggear los errores reales de Identity para facilitar diagnostico
+                var errors = string.Join("; ", result.Errors.Select(e => $"[{e.Code}] {e.Description}"));
+                logger.LogError("Error creando usuario '{U}': {Errors}", seed.UserName, errors);
+                continue;
+            }
 
             await userManager.AddToRoleAsync(user, seed.Role.ToString());
-            logger.LogInformation("Usuario '{U}' ({R}) creado.", seed.UserName, seed.Role);
+            logger.LogInformation("Usuario '{U}' ({R}) creado exitosamente.", seed.UserName, seed.Role);
 
             if (seed.Role == UserRole.Cliente)
                 await CreateMainAccountAsync(user, seed.InitialBalance, dbContext, logger);
@@ -147,8 +204,8 @@ public static class DefaultUserSeeder
         db.SavingsAccounts.Add(new SavingsAccount
         {
             AccountNumber = number, Balance = balance,
-            AccountType = AccountType.Main, IsActive = true,
-            CreatedAt = DateTime.UtcNow, ClientId = client.Id
+            AccountType   = AccountType.Main, IsActive = true,
+            CreatedAt     = DateTime.UtcNow, ClientId  = client.Id
         });
         await db.SaveChangesAsync();
         logger.LogInformation("Cuenta principal #{N} creada para '{U}'.", number, client.UserName);
@@ -156,13 +213,13 @@ public static class DefaultUserSeeder
 
     private sealed class SeedUser
     {
-        public string FirstName      { get; init; } = string.Empty;
-        public string LastName       { get; init; } = string.Empty;
-        public string IdentityCard   { get; init; } = string.Empty;
-        public string UserName       { get; init; } = string.Empty;
-        public string Email          { get; init; } = string.Empty;
-        public string Password       { get; init; } = string.Empty;
-        public UserRole Role         { get; init; }
+        public string FirstName       { get; init; } = string.Empty;
+        public string LastName        { get; init; } = string.Empty;
+        public string IdentityCard    { get; init; } = string.Empty;
+        public string UserName        { get; init; } = string.Empty;
+        public string Email           { get; init; } = string.Empty;
+        public string Password        { get; init; } = string.Empty;
+        public UserRole Role          { get; init; }
         public decimal InitialBalance { get; init; } = 0m;
     }
 }

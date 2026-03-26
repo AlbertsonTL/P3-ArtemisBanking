@@ -12,9 +12,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArtemisBanking.WebAPI.Controllers;
 
-/// <summary>
-/// Gestión de Cuentas de Ahorro — Admin only.
-/// </summary>
 [ApiController]
 [Route("api/savings-account")]
 [Authorize(Roles = "Admin")]
@@ -32,9 +29,6 @@ public class SavingsAccountsController : ControllerBase
         _userManager = userManager;
     }
 
-    /// <summary>
-    /// Listado paginado de cuentas con filtros opcionales.
-    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedResponse<SavingsAccountDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -103,9 +97,6 @@ public class SavingsAccountsController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// Asignar cuenta de ahorro secundaria a un cliente (9 dígitos únicos).
-    /// </summary>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -158,9 +149,6 @@ public class SavingsAccountsController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// Listado de transacciones de una cuenta por número de cuenta.
-    /// </summary>
     [HttpGet("{accountNumber}/transactions")]
     [ProducesResponseType(typeof(List<TransactionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -196,7 +184,6 @@ public class SavingsAccountsController : ControllerBase
 
 // ── DTOs exclusivos de la API ─────────────────────────────────────────────────
 
-/// <summary>Body para POST /api/savings-account</summary>
 public class CreateSavingsAccountApiDto
 {
     public string ClienteId { get; set; } = string.Empty;

@@ -30,11 +30,9 @@ public class AccountController : Controller
         _configuration = configuration;
     }
 
-    // GET /Account/Login
     [HttpGet]
     public IActionResult Login()
     {
-        // Si ya está logueado, redirigir a su Home según rol
         if (_signInManager.IsSignedIn(User))
             return RedirectToRoleHome();
 
@@ -49,15 +47,15 @@ public class AccountController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var user = await _userManager.FindByNameAsync(model.UserName);
+        var user = await _userManager.FindByNameAsync(model.UserName) 
+                   ?? await _userManager.FindByEmailAsync(model.UserName);
 
         if (user == null)
         {
-            ModelState.AddModelError(string.Empty, "Usuario o contraseña incorrectos.");
+            ModelState.AddModelError(string.Empty, "El usuario (o correo) y/o la contraseña son incorrectos.");
             return View(model);
         }
 
-        // Cuenta inactiva
         if (!user.IsActive)
         {
             ModelState.AddModelError(string.Empty,
@@ -66,14 +64,14 @@ public class AccountController : Controller
         }
 
         var result = await _signInManager.PasswordSignInAsync(
-            model.UserName, model.Password,
+            user.UserName!, model.Password,
             isPersistent: model.RememberMe,
             lockoutOnFailure: false);
 
         if (result.Succeeded)
             return RedirectToRoleHome(user.Role);
 
-        ModelState.AddModelError(string.Empty, "Usuario o contraseña incorrectos.");
+        ModelState.AddModelError(string.Empty, "El usuario (o correo) y/o la contraseña son incorrectos.");
         return View(model);
     }
 
@@ -99,26 +97,19 @@ public class AccountController : Controller
     {
         if (!ModelState.IsValid) return View(model);
 
-        var user = await _userManager.FindByNameAsync(model.UserName);
+        var user = await _userManager.FindByEmailAsync(model.Email);
 
         if (user == null)
         {
-            ModelState.AddModelError(string.Empty, "El usuario ingresado no existe.");
+            ModelState.AddModelError(string.Empty, "No existe un usuario registrado con este correo.");
             return View(model);
         }
 
-        // Desactivar usuario
-        user.IsActive = false;
-        await _userManager.UpdateAsync(user);
-
-        // Generar token
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-        // Construir enlace
         var resetLink = Url.Action("ResetPassword", "Account",
             new { userId = user.Id, token }, Request.Scheme)!;
 
-        // Enviar correo con template HTML
         await _emailService.SendAsync(new EmailRequestDto
         {
             To = user.Email!,
@@ -126,7 +117,16 @@ public class AccountController : Controller
             Body = EmailTemplates.ResetPassword($"{user.FirstName} {user.LastName}", resetLink)
         });
 
-        TempData["Success"] = "Se ha enviado un enlace de restablecimiento a tu correo.";
+        var enviroment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        if (enviroment == "Development")
+        {
+            TempData["Success"] = $"[MODO PRUEBA]: Como no hay servidor de correos, usa este enlace para recuperar: {resetLink}";
+        }
+        else
+        {
+            TempData["Success"] = "Se ha enviado un enlace de restablecimiento a tu bandeja de entrada.";
+        }
+        
         return RedirectToAction(nameof(Login));
     }
 
@@ -159,9 +159,11 @@ public class AccountController : Controller
             return View(model);
         }
 
-        // Reactivar usuario
-        user.IsActive = true;
-        await _userManager.UpdateAsync(user);
+        if (!user.IsActive)
+        {
+            user.IsActive = true;
+            await _userManager.UpdateAsync(user);
+        }
 
         TempData["Success"] = "Contraseña restablecida correctamente. Ahora puedes iniciar sesión.";
         return RedirectToAction(nameof(Login));
@@ -191,12 +193,10 @@ public class AccountController : Controller
         return RedirectToAction(nameof(Login));
     }
 
-    // Helpers
     private IActionResult RedirectToRoleHome(UserRole? role = null)
     {
         if (role == null && _signInManager.IsSignedIn(User))
         {
-            // Leer el rol del usuario actual desde los claims
             if (User.IsInRole("Admin")) return RedirectToAction("Index", "Home", new { area = "Admin" });
             if (User.IsInRole("Cajero")) return RedirectToAction("Index", "Home", new { area = "Cashier" });
             if (User.IsInRole("Cliente")) return RedirectToAction("Index", "Home", new { area = "Client" });

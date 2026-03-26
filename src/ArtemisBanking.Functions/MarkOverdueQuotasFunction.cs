@@ -6,9 +6,6 @@ using Microsoft.Extensions.Logging;
 
 namespace ArtemisBanking.Functions;
 
-/// <summary>
-/// Azure Function Timer Trigger diario.
-/// </summary>
 public class MarkOverdueQuotasFunction
 {
     private readonly IGenericRepository<AmortizationEntry, int> _entryRepo;
@@ -25,10 +22,6 @@ public class MarkOverdueQuotasFunction
         _logger    = logger;
     }
 
-    /// <summary>
-    /// Cron expression: "0 0 0 * * *" = every day at 00:00:00 UTC.
-    /// RunOnStartup=false para producción
-    /// </summary>
     [Function(nameof(MarkOverdueQuotasFunction))]
     public async Task Run(
         [TimerTrigger("0 0 0 * * *", RunOnStartup = false)] TimerInfo timerInfo)
@@ -101,10 +94,6 @@ public class MarkOverdueQuotasFunction
         await LogLoansWithAllQuotasPaid();
     }
 
-    /// <summary>
-    /// Registra en el log los préstamos donde todas las cuotas están pagadas
-    /// pero el préstamo aún figura como activo.
-    /// </summary>
     private async Task LogLoansWithAllQuotasPaid()
     {
         var prestamosActivos = await _loanRepo.Query()

@@ -4,7 +4,8 @@ namespace ArtemisBanking.WebApp.ViewModels.Account;
 
 public class ForgotPasswordViewModel
 {
-    [Required(ErrorMessage = "El usuario es requerido")]
-    [Display(Name = "Nombre de usuario")]
-    public string UserName { get; set; } = string.Empty;
+    [Required(ErrorMessage = "El correo electrónico es requerido")]
+    [EmailAddress(ErrorMessage = "Formato de correo inválido")]
+    [Display(Name = "Correo Electrónico")]
+    public string Email { get; set; } = string.Empty;
 }

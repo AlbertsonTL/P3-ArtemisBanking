@@ -14,9 +14,6 @@ using Xunit;
 
 namespace ArtemisBanking.Tests.Services;
 
-/// <summary>
-/// Cobertura mínima requerida: 2 casos de prueba del cálculo (criterio de aceptación).
-/// </summary>
 public class LoanServiceCalculationTests
 {
     
@@ -53,12 +50,6 @@ public class LoanServiceCalculationTests
             store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
     }    
 
-    /// <summary>
-    /// Caso de prueba 1 (obligatorio 18):
-    /// Préstamo RD$ 100,000 a 12% anual por 12 meses.
-    /// Resultado esperado calculado manualmente: RD$ 8,884.88
-    /// Fórmula: C = 100000 × (0.01 × 1.01^12) / (1.01^12 − 1)
-    /// </summary>
     [Fact]
     public void CalcularCuotaFrancesa_PrestamoEstandar_RetornaValorCorrecto()
     {
@@ -78,10 +69,6 @@ public class LoanServiceCalculationTests
         cuota.Should().BeGreaterThan(0m);
     }
 
-    /// <summary>
-    /// Préstamo RD$ 500,000 a 24% anual por 60 meses (5 años).
-    /// Tasa mensual: 2%. Resultado esperado: RD$ 13,247.20 aprox.
-    /// </summary>
     [Fact]
     public void CalcularCuotaFrancesa_PlazoLargTasaAlta_RetornaValorCorrecto()
     {
@@ -97,9 +84,6 @@ public class LoanServiceCalculationTests
             because: "la fórmula francesa para 500k/24%/60m da aprox. 13247.20");
     }
 
-    /// <summary>
-    /// Caso adicional: tasa 0% cuota = capital / n.
-    /// </summary>
     [Fact]
     public void CalcularCuotaFrancesa_TasaCero_RetornaMontoDivididoEntreMeses()
     {
@@ -111,9 +95,6 @@ public class LoanServiceCalculationTests
         cuota.Should().Be(10_000m, because: "sin interés la cuota es capital / meses");
     }
 
-    /// <summary>
-    /// Validación: monto negativo lanza ArgumentException.
-    /// </summary>
     [Fact]
     public void CalcularCuotaFrancesa_MontoNegativo_LanzaArgumentException()
     {
@@ -126,9 +107,6 @@ public class LoanServiceCalculationTests
            .WithParameterName("monto");
     }    
 
-    /// <summary>
-    /// Cliente sin deuda + nuevo préstamo pequeño NoRisk.
-    /// </summary>
     [Fact]
     public async Task EsClienteAltoRiesgo_SinDeuda_RetornaNoRisk()
     {
@@ -145,9 +123,6 @@ public class LoanServiceCalculationTests
         result.TieneRiesgo.Should().BeFalse();
     }
 
-    /// <summary>
-    /// La deuda actual del cliente ya supera el promedio AlreadyHighRisk.
-    /// </summary>
     [Fact]
     public async Task EsClienteAltoRiesgo_DeudaActualSuperaPromedio_RetornaAlreadyHighRisk()
     {
@@ -215,9 +190,6 @@ public class LoanServiceCalculationTests
         result.DeudaActualCliente.Should().Be(300_000m);
     }
 
-    /// <summary>
-    /// Cliente sin deuda pero el nuevo préstamo lo lleva sobre el promedio WillBeHighRisk.
-    /// </summary>
     [Fact]
     public async Task EsClienteAltoRiesgo_NuevoPrestamoSuperaPromedio_RetornaWillBeHighRisk()
     {

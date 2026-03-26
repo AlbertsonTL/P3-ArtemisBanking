@@ -4,10 +4,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace ArtemisBanking.WebAPI.Filters;
 
-/// <summary>
-/// Marca los endpoints públicos (AllowAnonymous) eliminando el requisito
-/// de JWT y añadiendo una nota visual en la descripción del endpoint.
-/// </summary>
 public class SwaggerPublicEndpointFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)

@@ -111,9 +111,12 @@ public class LoansController : Controller
         
         // Limpiamos guiones para comparar si el usuario los pone o no
         var cleanTerm = term.Replace("-", "");
+        var formattedTerm = cleanTerm.Length == 11 
+            ? cleanTerm.Insert(3, "-").Insert(11, "-") 
+            : term;
         
         var clients = await query
-            .Where(u => u.FirstName.Contains(term) || u.LastName.Contains(term) || u.IdentityCard.Replace("-", "").Contains(cleanTerm))
+            .Where(u => u.IdentityCard == formattedTerm || u.IdentityCard.Contains(term))
             .Take(10)
             .Select(u => new
             {
@@ -182,9 +185,6 @@ public class LoansController : Controller
 
     // RISK WARNING CONFIRM / CANCEL 
 
-    /// <summary>
-    /// Admin confirma préstamo de alto riesgo 
-    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ConfirmAssign()

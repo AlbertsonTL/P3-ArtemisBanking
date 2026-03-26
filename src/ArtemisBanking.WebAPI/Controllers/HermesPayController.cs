@@ -13,10 +13,6 @@ using System.Security.Claims;
 
 namespace ArtemisBanking.WebAPI.Controllers;
 
-/// <summary>
-/// Hermes Pay — Procesador de pagos con tarjeta de crédito.
-/// Acceso: Admin (ve todos los comercios) y Commerce (solo el propio).
-/// </summary>
 [ApiController]
 [Route("pay")]
 [Authorize(Roles = "Admin,Comercio")]
@@ -49,11 +45,6 @@ public class HermesPayController : ControllerBase
         _userManager = userManager;
     }
 
-    /// <summary>
-    /// Listado paginado de transacciones de un comercio.
-    /// Si el rol es Comercio → usa commerceId del JWT (ignora URL).
-    /// Si el rol es Admin → usa commerceId de la URL.
-    /// </summary>
     [HttpGet("get-transactions/{commerceId:int}")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -111,11 +102,6 @@ public class HermesPayController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// Procesar pago con tarjeta de crédito.
-    /// Valida tarjeta, comercio, crédito disponible. Acredita al comercio y registra consumo.
-    /// Envía 2 correos: al cliente y al comercio.
-    /// </summary>
     [HttpPost("process-payment/{commerceId:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -318,7 +304,6 @@ public class HermesPayController : ControllerBase
 
 // ── DTOs del módulo ───────────────────────────────────────────────────────────
 
-/// <summary>Body para POST /pay/process-payment/{commerceId}</summary>
 public class ProcessPaymentDto
 {
     public string CardNumber { get; set; } = string.Empty;

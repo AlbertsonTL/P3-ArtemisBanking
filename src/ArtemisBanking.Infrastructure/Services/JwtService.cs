@@ -17,9 +17,6 @@ public class JwtService : IJwtService
         _configuration = configuration;
     }
 
-    /// <summary>
-    /// Genera un JWT token con los claims del usuario
-    /// </summary>
     public string GenerateToken(ApplicationUser user)
     {
         var jwtKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key no configurada");
@@ -53,9 +50,6 @@ public class JwtService : IJwtService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    /// <summary>
-    /// Valida un token JWT y retorna los claims
-    /// </summary>
     public Dictionary<string, object>? ValidateToken(string token)
     {
         try
