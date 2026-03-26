@@ -1,7 +1,5 @@
 using ArtemisBanking.Infrastructure;
-using ArtemisBanking.Infrastructure.Persistence;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -11,16 +9,9 @@ var host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
     .ConfigureServices((ctx, services) =>
     {
-        // EF Core (mismo connection string que la app principal)
-        var connectionString = ctx.Configuration["SqlConnectionString"]
-            ?? throw new InvalidOperationException(
-                "Missing 'SqlConnectionString' in local.settings.json / Azure App Settings.");
-
-        services.AddDbContext<AppDbContext>(opt =>
-            opt.UseSqlServer(connectionString,
-                sql => sql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
-
-        // Infraestructura (repositorios, email, LoanService)         
+        // Infraestructura completa: EF Core, repositorios, email, LoanService
+        // El connection string se lee desde local.settings.json ("SqlConnectionString")
+        // o desde Azure App Settings en producción.
         services.AddInfrastructure(ctx.Configuration);
 
         // Application Insights
