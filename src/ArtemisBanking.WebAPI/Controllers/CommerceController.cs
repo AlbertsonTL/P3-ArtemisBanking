@@ -11,9 +11,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArtemisBanking.WebAPI.Controllers;
 
-/// <summary>
-/// Gestión de Comercios — Admin only.
-/// </summary>
 [ApiController]
 [Route("api/commerce")]
 [Authorize(Roles = "Admin")]
@@ -34,9 +31,6 @@ public class CommerceController : ControllerBase
         _mapper = mapper;
     }
 
-    /// <summary>
-    /// Listado paginado de comercios. Sin parámetros retorna todos los activos.
-    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedResponse<CommerceDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -76,9 +70,6 @@ public class CommerceController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// Detalle de un comercio.
-    /// </summary>
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(CommerceDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -93,9 +84,6 @@ public class CommerceController : ControllerBase
         return Ok(_mapper.Map<CommerceDto>(commerce));
     }
 
-    /// <summary>
-    /// Crear nuevo comercio.
-    /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(CommerceDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -115,9 +103,6 @@ public class CommerceController : ControllerBase
         return CreatedAtAction(nameof(GetCommerceById), new { id = commerce.Id }, dto);
     }
 
-    /// <summary>
-    /// Actualizar datos de un comercio existente.
-    /// </summary>
     [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -140,11 +125,6 @@ public class CommerceController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>
-    /// Cambiar estado del comercio (activar/desactivar).
-    /// Al desactivar: todos los usuarios del comercio se desactivan.
-    /// Al reactivar: los usuarios permanecen inactivos (deben hacer reset de contraseña).
-    /// </summary>
     [HttpPatch("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -182,13 +162,11 @@ public class CommerceController : ControllerBase
 
 // ── DTOs exclusivos de la API ─────────────────────────────────────────────────
 
-/// <summary>Body para PUT /api/commerce/{id}</summary>
 public class UpdateCommerceDto
 {
     public string Name { get; set; } = string.Empty;
 }
 
-/// <summary>Body para PATCH /api/commerce/{id}</summary>
 public class ToggleCommerceStatusDto
 {
     public bool Status { get; set; }

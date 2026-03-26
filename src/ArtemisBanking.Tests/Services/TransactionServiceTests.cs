@@ -10,10 +10,6 @@ using Xunit;
 
 namespace ArtemisBanking.Tests.Services;
 
-/// <summary>
-/// Tests unitarios para TransactionService.
-/// Cubre los 8 métodos de transacción con happy paths y casos de error.
-/// </summary>
 public class TransactionServiceTests
 {
     // ── Mocks ────────────────────────────────────────────────────────────────

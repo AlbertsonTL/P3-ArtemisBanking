@@ -11,7 +11,7 @@ public class ApplicationUser : IdentityUser
     public bool IsActive { get; set; } = false;
     public UserRole Role { get; set; }
 
-    /// <summary>FK al comercio asociado. Solo aplica para usuarios con Role = Comercio.</summary>
+    
     public int? CommerceId { get; set; }
 
     public ICollection<SavingsAccount> SavingsAccounts { get; set; } = new List<SavingsAccount>();

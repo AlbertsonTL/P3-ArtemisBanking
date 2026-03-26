@@ -5,10 +5,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ArtemisBanking.Infrastructure.Migrations
 {
-    /// <inheritdoc />
     public partial class InitialCreate : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             // ── ASP.NET Identity tables ──────────────────────────────────────
@@ -423,7 +421,6 @@ namespace ArtemisBanking.Infrastructure.Migrations
             migrationBuilder.CreateIndex(name: "IX_CardConsumptions_CommerceId", table: "CardConsumptions", column: "CommerceId");
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(name: "AspNetUserTokens");

@@ -10,9 +10,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArtemisBanking.WebAPI.Controllers;
 
-/// <summary>
-/// Gestión de Tarjetas de Crédito — Admin only.
-/// </summary>
 [ApiController]
 [Route("api/credit-card")]
 [Authorize(Roles = "Admin")]
@@ -30,9 +27,6 @@ public class CreditCardsController : ControllerBase
         _userManager = userManager;
     }
 
-    /// <summary>
-    /// Listado paginado de tarjetas con filtros opcionales.
-    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedResponse<CreditCardDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -90,9 +84,6 @@ public class CreditCardsController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// Detalle de tarjeta con sus consumos.
-    /// </summary>
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(CreditCardDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -128,10 +119,6 @@ public class CreditCardsController : ControllerBase
         return Ok(dto);
     }
 
-    /// <summary>
-    /// Asignar tarjeta de crédito a un cliente.
-    /// Genera 16 dígitos únicos, CVC SHA-256, expiración +3 años.
-    /// </summary>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -193,9 +180,6 @@ public class CreditCardsController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// Editar límite de crédito (no puede ser menor a la deuda actual).
-    /// </summary>
     [HttpPatch("{id:int}/limit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -221,9 +205,6 @@ public class CreditCardsController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>
-    /// Cancelar tarjeta (solo si deuda = 0).
-    /// </summary>
     [HttpPatch("{id:int}/cancel")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -270,20 +251,17 @@ public class CreditCardsController : ControllerBase
 
 // ── DTOs exclusivos de la API ─────────────────────────────────────────────────
 
-/// <summary>Body para POST /api/credit-card</summary>
 public class CreateCreditCardApiDto
 {
     public string ClienteId { get; set; } = string.Empty;
     public decimal Limite { get; set; }
 }
 
-/// <summary>Body para PATCH /api/credit-card/{id}/limit</summary>
 public class UpdateCreditCardLimitApiDto
 {
     public decimal NuevoLimite { get; set; }
 }
 
-/// <summary>Detalle de tarjeta con sus consumos</summary>
 public class CreditCardDetailDto
 {
     public CreditCardDto Card { get; set; } = null!;

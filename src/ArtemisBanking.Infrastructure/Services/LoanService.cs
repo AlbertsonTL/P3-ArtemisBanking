@@ -11,9 +11,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArtemisBanking.Infrastructure.Services;
 
-/// <summary>
-/// Implementación del servicio de préstamos.
-/// </summary>
 public class LoanService : ILoanService
 {
     private readonly IGenericRepository<Loan, int>              _loanRepo;
@@ -62,7 +59,6 @@ public class LoanService : ILoanService
         return Math.Round(cuota, 2, MidpointRounding.AwayFromZero);
     }
 
-    /// <inheritdoc/>
     public async Task<RiskAssessmentResult> EsClienteAltoRiesgoAsync(
         string clienteId,
         decimal nuevoCapital,

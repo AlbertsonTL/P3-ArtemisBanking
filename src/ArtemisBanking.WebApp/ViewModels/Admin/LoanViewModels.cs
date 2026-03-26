@@ -52,10 +52,6 @@ public class AssignLoanViewModel
     public int TermMonths { get; set; }
 }
 
-/// <summary>
-/// ViewModel para la pantalla de advertencia de alto riesgo
-/// Muestra mensaje de riesgo y datos del préstamo pendiente de confirmar.
-/// </summary>
 public class RiskWarningViewModel
 {
     // Datos del préstamo pendiente (para re-enviar al confirmar)
@@ -72,9 +68,6 @@ public class RiskWarningViewModel
     public decimal TotalNuevoPrestamo { get; set; }
 }
 
-/// <summary>
-/// ViewModel para el formulario de edición de tasa de interés.
-/// </summary>
 public class EditLoanRateViewModel
 {
     public int    LoanId             { get; set; }

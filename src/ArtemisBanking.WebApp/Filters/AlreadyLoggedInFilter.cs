@@ -3,10 +3,6 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace ArtemisBanking.WebApp.Filters;
 
-/// <summary>
-/// Filtro que redirige al Home del rol si el usuario ya está autenticado
-/// e intenta acceder al Login u otras páginas públicas.
-/// </summary>
 public class AlreadyLoggedInFilter : IActionFilter
 {
     public void OnActionExecuting(ActionExecutingContext context)

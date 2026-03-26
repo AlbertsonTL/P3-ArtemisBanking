@@ -19,11 +19,11 @@ public static class DefaultUserSeeder
     private static readonly SeedUser[] DefaultUsers =
     {
         new() { FirstName="Admin", LastName="Principal", IdentityCard="000-0000000-1",
-                UserName="admin", Email="admin@artemisbanking.com", Password="alb3rtsontl@gmail.com", Role=UserRole.Admin },
+                UserName="admin", Email="1000.gerald.manuel@gmail.com", Password="Admin@12345", Role=UserRole.Admin },
         new() { FirstName="Cajero", LastName="Principal", IdentityCard="000-0000000-2",
-                UserName="cajero", Email="admin@artemisbanking.com", Password="cajero@12345", Role=UserRole.Cajero },
+                UserName="cajero", Email="cajero@artemisbanking.com", Password="Cajero@12345", Role=UserRole.Cajero },
         new() { FirstName="Cliente", LastName="Demo", IdentityCard="000-0000000-3",
-                UserName="cliente", Email="admin@artemisbanking.com", Password="cliente@12345", Role=UserRole.Cliente, InitialBalance=50000m }
+                UserName="cliente", Email="cliente@artemisbanking.com", Password="Cliente@12345", Role=UserRole.Cliente, InitialBalance=50000m }
     };
 
     public static async Task SeedAsync(IServiceProvider serviceProvider)
@@ -39,11 +39,6 @@ public static class DefaultUserSeeder
         await SeedUsersAsync(userManager, dbContext, logger);
     }
 
-    /// <summary>
-    /// Verifica la existencia de la BD contra sys.databases ANTES de que EF Core
-    /// intente cualquier operacion. Usa una conexion ADO.NET independiente apuntando
-    /// a master para no depender de que la BD objetivo ya exista.
-    /// </summary>
     private static async Task ApplyMigrationsAsync(AppDbContext dbContext, ILogger logger)
     {
         var dbExists = await DatabaseExistsAsync(dbContext, logger);
@@ -112,9 +107,6 @@ public static class DefaultUserSeeder
         }
     }
 
-    /// <summary>
-    /// Verifica si las tablas de ASP.NET Identity existen en la base de datos.
-    /// </summary>
     private static async Task<bool> IdentityTablesExistAsync(AppDbContext dbContext, ILogger logger)
     {
         try
@@ -135,9 +127,6 @@ public static class DefaultUserSeeder
         }
     }
 
-    /// <summary>
-    /// Elimina todos los registros de __EFMigrationsHistory para forzar re-aplicacion.
-    /// </summary>
     private static async Task RemoveMigrationHistoryAsync(AppDbContext dbContext, ILogger logger)
     {
         try

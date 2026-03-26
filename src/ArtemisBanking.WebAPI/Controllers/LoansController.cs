@@ -11,9 +11,6 @@ using System.Security.Claims;
 
 namespace ArtemisBanking.WebAPI.Controllers;
 
-/// <summary>
-/// Gestión de Préstamos — Admin only.
-/// </summary>
 [ApiController]
 [Route("api/loan")]
 [Authorize(Roles = "Admin")]
@@ -37,9 +34,6 @@ public class LoansController : ControllerBase
         _userManager = userManager;
     }
 
-    /// <summary>
-    /// Listado paginado de préstamos con filtros opcionales.
-    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedResponse<LoanDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -98,9 +92,6 @@ public class LoansController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// Detalle de un préstamo con su tabla de amortización.
-    /// </summary>
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(LoanDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -136,9 +127,6 @@ public class LoansController : ControllerBase
         return Ok(dto);
     }
 
-    /// <summary>
-    /// Crear préstamo para un cliente. Verifica riesgo (409 si es alto riesgo).
-    /// </summary>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -194,9 +182,6 @@ public class LoansController : ControllerBase
         return StatusCode(StatusCodes.Status201Created, new { message = "Préstamo creado exitosamente" });
     }
 
-    /// <summary>
-    /// Editar tasa de interés y recalcular cuotas futuras pendientes.
-    /// </summary>
     [HttpPatch("{id:int}/rate")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -248,7 +233,6 @@ public class LoansController : ControllerBase
 
 // ── DTOs exclusivos de la API ─────────────────────────────────────────────────
 
-/// <summary>Body para POST /api/loan</summary>
 public class CreateLoanApiDto
 {
     public string ClienteId { get; set; } = string.Empty;
@@ -257,13 +241,11 @@ public class CreateLoanApiDto
     public decimal TasaAnual { get; set; }
 }
 
-/// <summary>Body para PATCH /api/loan/{id}/rate</summary>
 public class UpdateLoanRateApiDto
 {
     public decimal TasaAnual { get; set; }
 }
 
-/// <summary>Detalle completo del préstamo con tabla de amortización</summary>
 public class LoanDetailDto
 {
     public LoanDto Loan { get; set; } = null!;
