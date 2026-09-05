@@ -1,0 +1,104 @@
+@using ArtemisBanking.WebApp.ViewModels.Cashier
+@model ThirdPartyTransferConfirmationViewModel
+@{
+    ViewData["Title"] = "Confirmar Transferencia";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="mb-4">
+            <a asp-action="TransferThirdParty" class="text-slate-500 text-decoration-none small fw-bold">
+                <i class="fas fa-arrow-left me-1"></i> Volver
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-success bg-opacity-10 border-bottom-0 pt-4 px-4 text-center">
+                <div class="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 50px; height: 50px;">
+                    <i class="fas fa-check-circle fs-4"></i>
+                </div>
+                <h4 class="fw-bold text-slate-800 mb-0">Confirmar Transferencia</h4>
+                <p class="text-muted small">Verifica los datos antes de procesar</p>
+            </div>
+            <div class="card-body p-4">
+                <div class="bg-light border border-success border-opacity-25 rounded-3 p-4 mb-4">
+                    <h6 class="fw-bold text-slate-800 mb-3">
+                        <i class="fas fa-arrow-up text-danger me-2"></i> Cuenta Origen (Débito)
+                    </h6>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Titular</small>
+                            <p class="fw-bold text-slate-800 mb-0">@Model.SourceAccountHolderName</p>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Número de Cuenta</small>
+                            <p class="fw-bold text-slate-800 mb-0">@Model.SourceAccountNumber</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <small class="text-muted d-block">Saldo Actual</small>
+                            <p class="fw-bold text-slate-800 mb-0">RD$ @Model.SourceAccountBalance.ToString("N2")</p>
+                        </div>
+                    </div>
+
+                    <hr class="my-3 opacity-25" />
+
+                    <h6 class="fw-bold text-slate-800 mb-3">
+                        <i class="fas fa-arrow-down text-success me-2"></i> Cuenta Destino (Crédito)
+                    </h6>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Titular</small>
+                            <p class="fw-bold text-slate-800 mb-0">@Model.DestinationAccountHolderName</p>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Número de Cuenta</small>
+                            <p class="fw-bold text-slate-800 mb-0">@Model.DestinationAccountNumber</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <small class="text-muted d-block">Saldo Actual</small>
+                            <p class="fw-bold text-slate-800 mb-0">RD$ @Model.DestinationAccountBalance.ToString("N2")</p>
+                        </div>
+                    </div>
+
+                    <hr class="my-3 opacity-25" />
+
+                    <h6 class="fw-bold text-slate-800 mb-3">Detalles de la Transferencia</h6>
+                    <div class="row">
+                        <div class="col-12">
+                            <small class="text-muted d-block">Monto a Transferir</small>
+                            <p class="fw-bold text-success h5 mb-0">RD$ @Model.Amount.ToString("N2")</p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info small mt-3 mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        <strong>Operación cruzada:</strong> Se registrará un débito en la cuenta origen y un crédito en la cuenta destino de forma simultánea. Se enviarán 2 correos de confirmación.
+                    </div>
+                </div>
+
+                <div class="row g-2">
+                    <div class="col-6">
+                        <form asp-action="ConfirmTransfer" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success w-100 py-3 fw-bold rounded-3 shadow-sm">
+                                <i class="fas fa-check me-2"></i> Confirmar
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-6">
+                        <form asp-action="CancelTransfer" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-secondary w-100 py-3 fw-bold rounded-3">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

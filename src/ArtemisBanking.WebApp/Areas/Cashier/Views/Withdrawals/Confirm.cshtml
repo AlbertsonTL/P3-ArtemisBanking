@@ -1,0 +1,71 @@
+@using ArtemisBanking.WebApp.ViewModels.Cashier
+@model WithdrawalConfirmationViewModel
+@{
+    ViewData["Title"] = "Confirmar Retiro";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="mb-4">
+            <a asp-action="Withdrawal" class="text-slate-500 text-decoration-none small fw-bold">
+                <i class="fas fa-arrow-left me-1"></i> Volver
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-danger bg-opacity-10 border-bottom-0 pt-4 px-4 text-center">
+                <div class="bg-danger-subtle text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 50px; height: 50px;">
+                    <i class="fas fa-check-circle fs-4"></i>
+                </div>
+                <h4 class="fw-bold text-slate-800 mb-0">Confirmar Retiro</h4>
+                <p class="text-muted small">Verifica los datos antes de procesar</p>
+            </div>
+            <div class="card-body p-4">
+                <div class="bg-light border border-danger border-opacity-25 rounded-3 p-4 mb-4">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Titular de la Cuenta</small>
+                            <p class="fw-bold text-slate-800 mb-0">@Model.AccountHolderName</p>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Número de Cuenta</small>
+                            <p class="fw-bold text-slate-800 mb-0">@Model.AccountNumber</p>
+                        </div>
+                    </div>
+                    <hr class="my-3 opacity-25" />
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Saldo Actual</small>
+                            <p class="fw-bold text-slate-800 mb-0">RD$ @Model.CurrentBalance:N2</p>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Monto a Retirar</small>
+                            <p class="fw-bold text-danger mb-0">- RD$ @Model.Amount:N2</p>
+                        </div>
+                    </div>
+                    <hr class="my-3 opacity-25" />
+                    <div class="row">
+                        <div class="col-12">
+                            <small class="text-muted d-block">Nuevo Saldo</small>
+                            <p class="fw-bold text-slate-800 h5 mb-0">RD$ @(Model.CurrentBalance - Model.Amount):N2</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form asp-action="Confirm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger w-100 py-3 fw-bold rounded-3 shadow-sm mb-2">
+                        <i class="fas fa-check me-2"></i> Confirmar Retiro
+                    </button>
+                </form>
+
+                <form asp-action="Cancel" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-secondary w-100 py-3 fw-bold rounded-3">
+                        <i class="fas fa-times me-2"></i> Cancelar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

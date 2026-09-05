@@ -1,0 +1,102 @@
+@model ArtemisBanking.WebApp.ViewModels.Admin.EditLoanRateViewModel
+
+@{
+    ViewData["Title"] = "Modificar Tasa de Interés";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid px-4 mt-4">
+
+    <div class="d-flex align-items-center mb-4 gap-2">
+        <i class="fas fa-percentage text-warning fa-lg"></i>
+        <h4 class="mb-0">Modificar Tasa de Interés — Préstamo @Model.LoanNumber</h4>
+    </div>
+
+    <!-- Info del préstamo actual -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-bold">
+            <i class="fas fa-info-circle me-2"></i>Información Actual del Préstamo
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3 text-center">
+                    <div class="text-muted small">Cliente</div>
+                    <div class="fw-semibold">@Model.ClientName</div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="text-muted small">Tasa Actual</div>
+                    <div class="fw-semibold text-primary">@Model.CurrentRate.ToString("N2")%</div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="text-muted small">Cuota Actual</div>
+                    <div class="fw-semibold">RD$ @Model.CurrentMonthly.ToString("N2")</div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="text-muted small">Cuotas Futuras Pendientes</div>
+                    <div class="fw-semibold text-warning">@Model.RemainingQuotas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de edición -->
+    <div class="row justify-content-center">
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark fw-bold">
+                    <i class="fas fa-edit me-2"></i>Nueva Tasa de Interés
+                </div>
+                <div class="card-body">
+
+                    <form asp-action="EditRate" asp-controller="Loans" asp-area="Admin" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="LoanId" />
+                        <input type="hidden" asp-for="LoanNumber" />
+                        <input type="hidden" asp-for="ClientName" />
+                        <input type="hidden" asp-for="CurrentRate" />
+                        <input type="hidden" asp-for="CurrentMonthly" />
+                        <input type="hidden" asp-for="RemainingQuotas" />
+
+                        <div class="mb-4">
+                            <label asp-for="NewAnnualInterestRate" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <input asp-for="NewAnnualInterestRate"
+                                       class="form-control form-control-lg"
+                                       type="number"
+                                       step="0.01"
+                                       min="0.01"
+                                       max="50"
+                                       placeholder="Ej: 14.50" />
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <span asp-validation-for="NewAnnualInterestRate" class="text-danger small"></span>
+                            <div class="form-text">
+                                Solo las <strong>@Model.RemainingQuotas cuotas futuras pendientes</strong>
+                                serán recalculadas. Las ya pagadas no se modifican.
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info small py-2">
+                            <i class="fas fa-envelope me-1"></i>
+                            Se enviará un correo automático al cliente informando el cambio.
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning fw-bold">
+                                <i class="fas fa-save me-2"></i>Modificar Tasa
+                            </button>
+                            <a asp-action="Index" asp-controller="Loans" asp-area="Admin"
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Volver
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

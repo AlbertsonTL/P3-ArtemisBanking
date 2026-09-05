@@ -1,0 +1,147 @@
+@using ArtemisBanking.Domain.Enums
+@model ArtemisBanking.WebApp.ViewModels.Admin.AccountDetailsViewModel
+@{
+    ViewData["Title"] = "Detalle de Cuenta";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark mb-0">
+            <i class="fas fa-list-alt me-2 text-primary"></i> Historial de Transacciones
+        </h3>
+        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="fas fa-arrow-left me-2"></i> Volver
+        </a>
+    </div>
+
+    <!-- Info de la cuenta -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <small class="text-muted d-block">N° CUENTA</small>
+                    <span class="fw-bold font-monospace text-dark">@Model.AccountNumber</span>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">TITULAR</small>
+                    <span class="fw-semibold text-dark">@Model.ClientName</span>
+                    <small class="text-muted d-block">Cédula: @Model.IdentityCard</small>
+                </div>
+                <div class="col-md-2">
+                    <small class="text-muted d-block">TIPO</small>
+                    @if (Model.AccountType == AccountType.Main)
+                    {
+                        <span class="badge bg-primary rounded-pill px-3 py-1">PRINCIPAL <i class="fas fa-star ms-1 text-warning"></i></span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-light text-dark border rounded-pill px-3 py-1">SECUNDARIA</span>
+                    }
+                </div>
+                <div class="col-md-2">
+                    <small class="text-muted d-block">BALANCE</small>
+                    <span class="fw-bold text-success fs-5">RD$ @Model.Balance.ToString("N2")</span>
+                </div>
+                <div class="col-md-2">
+                    <small class="text-muted d-block">ESTADO</small>
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3 py-1">ACTIVA</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger bg-opacity-25 text-danger rounded-pill px-3 py-1">CANCELADA</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de transacciones -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-0 py-3 px-4">
+            <h6 class="fw-bold text-dark mb-0">
+                <i class="fas fa-exchange-alt me-2 text-primary"></i>
+                Movimientos (@Model.Transactions.Count total)
+            </h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted">
+                    <tr>
+                        <th class="py-3 px-4 fw-semibold border-0">FECHA</th>
+                        <th class="py-3 border-0 text-center">TIPO</th>
+                        <th class="py-3 border-0">CATEGORÍA</th>
+                        <th class="py-3 border-0 text-end">MONTO (RD$)</th>
+                        <th class="py-3 border-0">ORIGEN</th>
+                        <th class="py-3 border-0">BENEFICIARIO</th>
+                        <th class="py-3 px-4 border-0 text-center">ESTADO</th>
+                    </tr>
+                </thead>
+                <tbody class="border-top-0">
+                    @if (!Model.Transactions.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fas fa-inbox fs-3 mb-2 d-block opacity-25"></i>
+                                Sin movimientos registrados
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var tx in Model.Transactions)
+                        {
+                            <tr>
+                                <td class="px-4">
+                                    <div class="fw-medium text-dark">@tx.Date.ToString("dd/MM/yyyy")</div>
+                                    <small class="text-muted">@tx.Date.ToString("HH:mm")</small>
+                                </td>
+                                <td class="text-center">
+                                    @if (tx.Type == TransactionType.Credit)
+                                    {
+                                        <span class="badge bg-success bg-opacity-15 text-success rounded-pill px-3">
+                                            <i class="fas fa-arrow-down me-1"></i> CRÉDITO
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger bg-opacity-15 text-danger rounded-pill px-3">
+                                            <i class="fas fa-arrow-up me-1"></i> DÉBITO
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <small class="text-muted">@tx.Category.ToString()</small>
+                                </td>
+                                <td class="text-end fw-bold @(tx.Type == TransactionType.Credit ? "text-success" : "text-danger")">
+                                    @(tx.Type == TransactionType.Credit ? "+" : "-")@tx.Amount.ToString("N2")
+                                </td>
+                                <td>
+                                    <small class="font-monospace text-muted">@(string.IsNullOrEmpty(tx.Origin) ? "—" : tx.Origin)</small>
+                                </td>
+                                <td>
+                                    <small class="font-monospace text-muted">@(string.IsNullOrEmpty(tx.Beneficiary) ? "—" : tx.Beneficiary)</small>
+                                </td>
+                                <td class="text-center px-4">
+                                    @if (tx.Status == TransactionStatus.Approved)
+                                    {
+                                        <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-2 py-1">Aprobada</span>
+                                    }
+                                    else if (tx.Status == TransactionStatus.Rejected)
+                                    {
+                                        <span class="badge bg-danger bg-opacity-25 text-danger rounded-pill px-2 py-1">Rechazada</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning bg-opacity-25 text-warning-emphasis rounded-pill px-2 py-1">Pendiente</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

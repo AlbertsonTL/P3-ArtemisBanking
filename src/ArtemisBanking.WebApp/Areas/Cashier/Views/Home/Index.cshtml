@@ -1,0 +1,151 @@
+@model CashierDashboardViewModel
+@{
+    ViewData["Title"] = "Inicio Cajero - Artemis Banking";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-slate-800 mb-1">Bienvenido, @User.Identity?.Name</h2>
+            <p class="text-muted small">Panel de control del cajero - Operaciones del día actual</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a asp-area="" asp-action="Logout" asp-controller="Account" class="btn btn-outline-danger btn-sm">
+                <i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión
+            </a>
+        </div>
+    </div>
+
+    <!-- Indicadores del día -->
+    <div class="row g-4 mb-5">
+        <!-- Depósitos -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card p-4 h-100 stat-card border-success">
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="fas fa-arrow-down fs-4"></i>
+                </div>
+                <h6 class="text-muted small mb-2 uppercase fw-bold ls-1">Depósitos</h6>
+                <h3 class="fw-bold mb-1">@Model.DepositsCount</h3>
+                <p class="text-muted small mb-0">RD$ @Model.TotalDeposited.ToString("N2")</p>
+            </div>
+        </div>
+
+        <!-- Retiros -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card p-4 h-100 stat-card border-danger">
+                <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                    <i class="fas fa-arrow-up fs-4"></i>
+                </div>
+                <h6 class="text-muted small mb-2 uppercase fw-bold ls-1">Retiros</h6>
+                <h3 class="fw-bold mb-1">@Model.WithdrawalsCount</h3>
+                <p class="text-muted small mb-0">RD$ @Model.TotalWithdrawn.ToString("N2")</p>
+            </div>
+        </div>
+
+        <!-- Pagos a Tarjetas -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card p-4 h-100 stat-card border-info">
+                <div class="stat-icon bg-info bg-opacity-10 text-info">
+                    <i class="fas fa-credit-card fs-4"></i>
+                </div>
+                <h6 class="text-muted small mb-2 uppercase fw-bold ls-1">Tarjetas</h6>
+                <h3 class="fw-bold mb-1">@Model.CreditCardPaymentsCount</h3>
+                <p class="text-muted small mb-0">Pagos procesados</p>
+            </div>
+        </div>
+
+        <!-- Pagos a Préstamos -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card p-4 h-100 stat-card border-warning">
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="fas fa-file-invoice-dollar fs-4"></i>
+                </div>
+                <h6 class="text-muted small mb-2 uppercase fw-bold ls-1">Préstamos</h6>
+                <h3 class="fw-bold mb-1">@Model.LoanPaymentsCount</h3>
+                <p class="text-muted small mb-0">Cuotas abonadas</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menú de Operaciones -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="fw-bold">Centro de Operaciones</h4>
+            <div class="border-bottom w-100 mb-4" style="border-width: 2px !important;"></div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Depósito -->
+        <div class="col-md-4">
+            <a asp-action="Deposit" asp-controller="Deposits" class="card text-decoration-none h-100">
+                <div class="card-body p-4 text-center">
+                    <div class="stat-icon bg-success bg-opacity-10 text-success mx-auto">
+                        <i class="fas fa-cash-register fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Depósito</h5>
+                    <p class="text-muted small mb-0">Abonar efectivo a cuenta de ahorro</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Retiro -->
+        <div class="col-md-4">
+            <a asp-action="Withdrawal" asp-controller="Withdrawals" class="card text-decoration-none h-100">
+                <div class="card-body p-4 text-center">
+                    <div class="stat-icon bg-danger bg-opacity-10 text-danger mx-auto">
+                        <i class="fas fa-money-bill-alt fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Retiro</h5>
+                    <p class="text-muted small mb-0">Entrega de efectivo a cliente</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Pago a Tarjeta -->
+        <div class="col-md-4">
+            <a asp-action="PayCreditCard" asp-controller="Payments" class="card text-decoration-none h-100">
+                <div class="card-body p-4 text-center">
+                    <div class="stat-icon bg-info bg-opacity-10 text-info mx-auto">
+                        <i class="fas fa-credit-card fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Pago Tarjeta</h5>
+                    <p class="text-muted small mb-0">Abono a deuda de tarjeta de crédito</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Pago a Préstamo -->
+        <div class="col-md-4">
+            <a asp-action="PayLoan" asp-controller="Payments" class="card text-decoration-none h-100">
+                <div class="card-body p-4 text-center">
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning mx-auto">
+                        <i class="fas fa-file-invoice-dollar fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Pago Préstamo</h5>
+                    <p class="text-muted small mb-0">Cobro secuencial de cuotas</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Transacción a Terceros -->
+        <div class="col-md-4">
+            <a asp-action="TransferThirdParty" asp-controller="Transfers" class="card text-decoration-none h-100">
+                <div class="card-body p-4 text-center">
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary mx-auto">
+                        <i class="fas fa-exchange-alt fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Transferencia</h5>
+                    <p class="text-muted small mb-0">Movimientos entre cuentas de terceros</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    a.card:hover {
+        transform: translateY(-4px);
+    }
+</style>

@@ -1,0 +1,125 @@
+@using ArtemisBanking.Domain.Entities
+@model ApplicationUser
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<div class="row mb-5 align-items-end">
+    <div class="col-auto">
+        <div class="stat-icon bg-primary bg-opacity-10 text-primary" style="width: 80px; height: 80px; font-size: 2rem;">
+            @Model.FirstName[0]@Model.LastName[0]
+        </div>
+    </div>
+    <div class="col">
+        <h2 class="fw-bold text-slate-800 mb-1">@Model.FirstName @Model.LastName</h2>
+        <p class="text-muted mb-0">
+            <span class="badge bg-success-subtle text-success border-0 px-3 py-2 rounded-pill small me-2">Cuenta Activa</span>
+            Cédula: @Model.IdentityCard
+        </p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Información Personal -->
+    <div class="col-lg-4">
+        <div class="card h-100 p-4">
+            <h5 class="fw-bold mb-4">Información de Contacto</h5>
+            <div class="mb-4">
+                <label class="text-muted small uppercase fw-bold ls-1 d-block mb-1">Correo Electrónico</label>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-envelope text-primary me-3"></i>
+                    <span class="fw-medium">@Model.Email</span>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="text-muted small uppercase fw-bold ls-1 d-block mb-1">Usuario (Login)</label>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-user-circle text-primary me-3"></i>
+                    <span class="fw-medium">@Model.UserName</span>
+                </div>
+            </div>
+            <div class="mb-0">
+                <p class="small text-muted mb-0">Para actualizar tus datos de contacto, por favor visita nuestra oficina más cercana o contacta a soporte.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cuentas de Ahorro -->
+    <div class="col-lg-8">
+        <div class="row g-4">
+            <!-- Resumen financiero -->
+            <div class="col-md-6">
+                <div class="card p-4 border-bottom border-4 border-primary">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                            <i class="fas fa-wallet fs-4"></i>
+                        </div>
+                        <span class="badge bg-light text-dark rounded-pill">Total Liquidez</span>
+                    </div>
+                    <h3 class="fw-bold mb-1">RD$ @Model.SavingsAccounts.Sum(s => s.Balance).ToString("N2")</h3>
+                    <p class="text-muted small mb-0">@Model.SavingsAccounts.Count Cuentas de Ahorro</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-4 border-bottom border-4 border-danger">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                            <i class="fas fa-credit-card fs-4"></i>
+                        </div>
+                        <span class="badge bg-light text-dark rounded-pill">Deuda Consolidada</span>
+                    </div>
+                    <h3 class="fw-bold mb-1">RD$ @Model.CreditCards.Sum(c => c.DebtAmount).ToString("N2")</h3>
+                    <p class="text-muted small mb-0">Y RD$ @Model.Loans.Sum(l => l.Amount - l.AmountPaid).ToString("N2") en Préstamos</p>
+                </div>
+            </div>
+
+            <!-- MIS NÚMEROS DE CUENTA — para recibir transferencias -->
+            <div class="col-12">
+                <div class="card p-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-university text-primary me-2"></i> Mis Números de Cuenta
+                    </h5>
+                    <p class="text-muted small mb-3">Comparte estos números para recibir transferencias de otras personas.</p>
+                    @foreach (var account in Model.SavingsAccounts.Where(s => s.IsActive))
+                    {
+                        <div class="d-flex align-items-center justify-content-between p-3 mb-2 rounded-3 bg-light">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width:38px;height:38px;">
+                                    <i class="fas fa-piggy-bank"></i>
+                                </div>
+                                <div>
+                                    <p class="fw-bold font-monospace mb-0 fs-6">@account.AccountNumber</p>
+                                    <span class="badge @(account.AccountType == ArtemisBanking.Domain.Enums.AccountType.Main ? "bg-primary-subtle text-primary" : "bg-info-subtle text-info") small">
+                                        @(account.AccountType == ArtemisBanking.Domain.Enums.AccountType.Main ? "Principal" : "Secundaria")
+                                    </span>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill"
+                                    onclick="navigator.clipboard.writeText('@account.AccountNumber'); this.innerHTML='<i class=\'fas fa-check\'></i> Copiado'; setTimeout(()=>this.innerHTML='<i class=\'fas fa-copy\'></i> Copiar',2000)">
+                                <i class="fas fa-copy"></i> Copiar
+                            </button>
+                        </div>
+                    }
+                    @if (!Model.SavingsAccounts.Any(s => s.IsActive))
+                    {
+                        <p class="text-muted small mb-0">No tienes cuentas activas.</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Seguridad -->
+            <div class="col-12">
+                <div class="card p-4">
+                    <h5 class="fw-bold mb-3">Seguridad de la Cuenta</h5>
+                    <div class="alert bg-light border-0 d-flex align-items-center mb-0">
+                        <i class="fas fa-shield-alt text-success fs-4 me-3"></i>
+                        <div>
+                            <p class="mb-0 small fw-bold">Tu cuenta está protegida con encriptación SHA-256</p>
+                            <p class="mb-0 x-small text-muted">Último acceso detectado el @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

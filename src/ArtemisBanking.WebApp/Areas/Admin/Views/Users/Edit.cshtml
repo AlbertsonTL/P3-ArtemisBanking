@@ -1,0 +1,104 @@
+@using ArtemisBanking.Domain.Enums
+@model ArtemisBanking.WebApp.ViewModels.Admin.EditUserViewModel
+@{
+    ViewData["Title"] = "Editar Información de Usuario";
+}
+
+<div class="row justify-content-center py-4">
+    <div class="col-xl-8 col-lg-10">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+                <h4 class="fw-bold text-dark mb-0">Editando a: @Model.UserName</h4>
+                @if (Model.Role == UserRole.Admin)
+                {
+                    <span class="badge bg-danger mt-2">ADMIN</span>
+                }
+                else if (Model.Role == UserRole.Cliente)
+                {
+                    <span class="badge bg-primary mt-2">CLIENTE</span>
+                }
+            </div>
+            
+            <form asp-action="Edit" method="post" class="card-body p-4">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="Role" /> <!-- Mantener rol actual -->
+                <input type="hidden" asp-for="UserName" />
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row g-4">
+                    <!-- Nombres y Apellidos -->
+                    <div class="col-md-6">
+                        <label asp-for="FirstName" class="form-label fw-medium text-muted">Nombres</label>
+                        <input asp-for="FirstName" class="form-control form-control-lg bg-light border-0" />
+                        <span asp-validation-for="FirstName" class="text-danger small"></span>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label asp-for="LastName" class="form-label fw-medium text-muted">Apellidos</label>
+                        <input asp-for="LastName" class="form-control form-control-lg bg-light border-0" />
+                        <span asp-validation-for="LastName" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Cédula e Email -->
+                    <div class="col-md-6">
+                        <label asp-for="IdentityCard" class="form-label fw-medium text-muted">Cédula de Identidad</label>
+                        <input asp-for="IdentityCard" id="IdentityCard" class="form-control form-control-lg bg-light border-0" placeholder="000-0000000-0" maxlength="13" />
+                        <span asp-validation-for="IdentityCard" class="text-danger small"></span>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label fw-medium text-muted">Correo Electrónico</label>
+                        <input asp-for="Email" type="email" class="form-control form-control-lg bg-light border-0" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                    
+                    <!-- ZONA EXCLUSIVA PARA CLIENTES (FONDEO MÁGICO) -->
+                    @if (Model.Role == UserRole.Cliente)
+                    {
+                        <div class="col-12 mt-5">
+                            <div class="p-4 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-25">
+                                <h5 class="fw-bold text-success mb-2"><i class="fas fa-hand-holding-usd me-2"></i> Adición de Fondos (Opcional)</h5>
+                                
+                                <label asp-for="MontoAdicional" class="form-label fw-bold text-success">Monto a Asignar en RD$</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-white border-0 text-success fw-bold">RD$</span>
+                                    <input asp-for="MontoAdicional" type="number" step="0.01" min="0" class="form-control border-0" value="0.00" />
+                                </div>
+                                <span asp-validation-for="MontoAdicional" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-5">
+                    <a asp-action="Index" class="btn btn-light px-4 rounded-pill fw-medium">Cancelar</a>
+                    <button type="submit" class="btn btn-primary px-5 rounded-pill fw-medium shadow-sm">
+                        <i class="fas fa-save me-2"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function formatCedula(input) {
+            let val = input.value.replace(/\D/g, "").substring(0, 11);
+            let formatted = "";
+            if (val.length > 0) formatted += val.substring(0, 3);
+            if (val.length > 3) formatted += "-" + val.substring(3, 10);
+            if (val.length > 10) formatted += "-" + val.substring(10, 11);
+            input.value = formatted;
+        }
+
+        $('#IdentityCard').on('input', function() {
+            formatCedula(this);
+        });
+
+        $(document).ready(function() {
+            formatCedula(document.getElementById('IdentityCard'));
+        });
+    </script>
+}

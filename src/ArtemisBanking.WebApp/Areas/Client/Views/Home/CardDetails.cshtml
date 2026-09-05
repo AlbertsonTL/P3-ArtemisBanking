@@ -1,0 +1,74 @@
+@model List<ArtemisBanking.Domain.Entities.CardConsumption>
+@{
+    ViewData["Title"] = "Consumos de Tarjeta";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-slate-500 text-decoration-none small fw-bold">
+        <i class="fas fa-arrow-left me-1"></i> Volver al dashboard
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-5">
+        <div class="card border-0 shadow-sm bg-slate-900 text-white p-4 h-100" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+            <div class="d-flex justify-content-between mb-4">
+                <i class="fas fa-microchip text-warning fs-3"></i>
+                <i class="fab fa-cc-mastercard fs-2 opacity-50"></i>
+            </div>
+            <h4 class="fw-bold font-monospace tracking-widest mb-4">**** **** **** @ViewBag.CardNumber.Substring(12)</h4>
+            <div class="row">
+                <div class="col-6">
+                    <p class="small text-uppercase fw-bold opacity-75 mb-0">Deuda Actual</p>
+                    <h4 class="fw-bold mb-0">RD$ @ViewBag.Debt.ToString("N2")</h4>
+                </div>
+                <div class="col-6 text-end">
+                    <p class="small text-uppercase fw-bold opacity-75 mb-0">Límite</p>
+                    <h6 class="mb-0">RD$ @ViewBag.Limit.ToString("N2")</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 px-4 border-bottom-0">
+        <h5 class="fw-bold text-slate-800 mb-0">Detalle de Consumos</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th class="ps-4 py-3 text-slate-500 fw-bold small text-uppercase">Fecha</th>
+                    <th class="py-3 text-slate-500 fw-bold small text-uppercase">Establecimiento</th>
+                    <th class="py-3 text-slate-500 fw-bold small text-uppercase">Estado</th>
+                    <th class="pe-4 py-3 text-end text-slate-500 fw-bold small text-uppercase">Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted small">No hay consumos registrados para esta tarjeta.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var c in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 py-3 text-slate-500 small">@c.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="py-3 fw-medium text-slate-700">@c.CommerceName</td>
+                            <td class="py-3">
+                                <span class="badge @(c.Status == ConsumptionStatus.Approved ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger") rounded-pill px-2 py-1">
+                                    @c.Status
+                                </span>
+                            </td>
+                            <td class="pe-4 py-3 text-end fw-bold">RD$ @c.Amount.ToString("N2")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

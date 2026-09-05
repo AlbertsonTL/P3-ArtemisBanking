@@ -1,0 +1,56 @@
+@model ArtemisBanking.WebApp.ViewModels.Admin.AssignCardViewModel
+@{
+    ViewData["Title"] = "Asignar Tarjeta Crédito";
+}
+
+<div class="row justify-content-center py-4">
+    <div class="col-xl-6 col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-info bg-opacity-10 border-0 p-4">
+                <h4 class="fw-bold text-info mb-0"><i class="fas fa-credit-card me-2"></i> Asignación de TC</h4>
+                <p class="text-muted mb-0 small">Genera automáticamente número (16 dígitos) e incorpora protección SHA-256 en el CVC.</p>
+            </div>
+            
+            <form asp-action="Assign" method="post" class="card-body p-4">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-4">
+                    <label asp-for="ClientId" class="form-label fw-bold text-dark">Cliente Titular</label>
+                    <select asp-for="ClientId" asp-items="Model.Clients" class="form-select form-select-lg bg-light border-0">
+                        <option value="">-- Seleccione un Cliente activo --</option>
+                    </select>
+                    <span asp-validation-for="ClientId" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="CreditLimit" class="form-label fw-bold text-dark">Límite Aprobado (RD$)</label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-white border-0 text-muted fw-bold">RD$</span>
+                        <input asp-for="CreditLimit" type="number" step="0.01" class="form-control border-0 bg-light" placeholder="Ej. 100000" />
+                    </div>
+                    <span asp-validation-for="CreditLimit" class="text-danger small"></span>
+                </div>
+
+                <!-- Info Box -->
+                <div class="alert alert-warning border-0 bg-warning bg-opacity-10 text-dark d-flex align-items-start mb-4 rounded-3 p-3">
+                    <i class="fas fa-lock fs-4 text-warning me-3"></i>
+                    <div>
+                        <strong>Seguridad Criptográfica</strong><br>
+                        <small>El CVC (3 dígitos) será generado al azar y mostrado UNA ÚNICA VEZ en la siguiente pantalla. En la BD se guardará bajo una función hash irreversible (SHA-256).</small>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-4">
+                    <a asp-action="Index" class="btn btn-light px-4 rounded-pill fw-medium">Cancelar</a>
+                    <button type="submit" class="btn btn-info text-white px-5 rounded-pill fw-medium shadow-sm">
+                        <i class="fas fa-check-circle me-2"></i> Emitir Plástico
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
