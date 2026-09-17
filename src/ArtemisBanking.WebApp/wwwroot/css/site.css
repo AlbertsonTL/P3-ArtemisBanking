@@ -10,9 +10,18 @@
     --border-color: #e2e8f0;
     --success: #10b981;
     --danger: #ef4444;
+
+    --bg-image-color: #f0fbffd0;
+    /* dark mode--bg-image-color: rgba(8, 18, 24, .92); */
+
 }
 
 body {
+    background-image: linear-gradient(var(--bg-image-color), var(--bg-image-color)), url('../images/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     background-color: var(--background);
     color: var(--text-main);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
