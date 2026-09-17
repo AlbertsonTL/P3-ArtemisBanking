@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ArtemisBanking.WebApp</title>
+    <script>try { if (localStorage.getItem('artemis-theme') === 'dark') document.documentElement.dataset.theme = 'dark'; } catch (error) { }</script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -26,6 +27,12 @@
                         </li>
                     </ul>
                     <ul class="navbar-nav">
+                        <li class="nav-item d-flex align-items-center">
+                            <button type="button" class="theme-toggle" data-theme-toggle aria-label="Cambiar a modo oscuro" aria-pressed="false">
+                                <i data-theme-icon class="fas fa-moon" aria-hidden="true"></i>
+                                <span data-theme-label>Modo oscuro</span>
+                            </button>
+                        </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             @if (User.IsInRole("Cliente"))
