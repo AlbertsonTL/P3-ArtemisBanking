@@ -313,3 +313,192 @@ body,
 .footer {
     display: none !important;
 }
+
+/* Shared account screens */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.login-page {
+    background-image: linear-gradient(var(--bg-image-color), var(--bg-image-color)), url('../background.jpg');
+}
+
+.login-card {
+    width: 100%;
+    max-width: 450px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, .9);
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px var(--shadow-color);
+    animation: slideUp .6s ease-out;
+}
+
+[data-theme="dark"] .login-card {
+    background: rgba(23, 32, 51, .94);
+}
+
+.card-header-premium {
+    padding: 40px 30px;
+    color: #fff;
+    background: var(--primary);
+    text-align: center;
+}
+
+.brand-icon {
+    display: block;
+    margin-bottom: 15px;
+    font-size: 2.5rem;
+}
+
+.auth-page--recovery {
+    position: relative;
+    background: linear-gradient(135deg, #090e17 0%, #1a2a40 100%);
+}
+
+.orb {
+    position: absolute;
+    z-index: 0;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: .5;
+    animation: float 10s infinite ease-in-out;
+}
+
+.orb-1 {
+    top: -100px;
+    left: -100px;
+    width: 400px;
+    height: 400px;
+    background: rgba(56, 189, 248, .4);
+}
+
+.orb-2 {
+    right: -50px;
+    bottom: -50px;
+    width: 300px;
+    height: 300px;
+    background: rgba(59, 130, 246, .3);
+    animation-delay: -5s;
+}
+
+.auth-card {
+    z-index: 1;
+    width: 100%;
+    max-width: 480px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, .03);
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, .5);
+    backdrop-filter: blur(16px);
+    animation: slideUp .6s cubic-bezier(.16, 1, .3, 1) forwards;
+}
+
+.auth-header {
+    padding: 40px 40px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, .05);
+    text-align: center;
+}
+
+.auth-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 20px;
+    color: #fff;
+    background: linear-gradient(135deg, #38bdf8, #2563eb);
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, .4);
+    font-size: 32px;
+    transform: rotate(-10deg);
+    transition: transform .3s ease;
+}
+
+.auth-card:hover .auth-icon {
+    transform: rotate(0) scale(1.05);
+}
+
+.auth-title { margin-bottom: 10px; color: #f8fafc; font-weight: 700; letter-spacing: -.5px; }
+.auth-subtitle { color: #94a3b8; font-size: .95rem; line-height: 1.5; }
+.auth-body { padding: 30px 40px 40px; }
+.auth-page .form-floating { position: relative; margin-bottom: 25px; }
+.auth-page .form-floating > .form-control {
+    height: 60px;
+    padding-left: 20px;
+    color: #f8fafc;
+    background: rgba(15, 23, 42, .6);
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 12px;
+}
+.auth-page .form-floating > .form-control:focus {
+    color: #f8fafc;
+    background: rgba(15, 23, 42, .9);
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, .15);
+}
+.auth-page .form-floating > label { padding-left: 20px; color: #64748b; }
+.auth-page .form-floating > .form-control:focus ~ label,
+.auth-page .form-floating > .form-control:not(:placeholder-shown) ~ label { color: #38bdf8; }
+
+.auth-submit {
+    position: relative;
+    height: 56px;
+    overflow: hidden;
+    color: #fff;
+    background: linear-gradient(to right, #2563eb, #38bdf8);
+    border: 0;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: .5px;
+}
+
+.auth-submit:hover { color: #fff; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(37, 99, 235, .4); }
+.back-link { display: inline-flex; align-items: center; color: #64748b; font-size: .95rem; font-weight: 500; text-decoration: none; }
+.back-link:hover { color: #f8fafc; }
+.alert-glass { padding: 15px 20px; color: #fca5a5; background: rgba(239, 68, 68, .1); border: 1px solid rgba(239, 68, 68, .3); border-radius: 12px; font-size: .9rem; }
+.security-indicator { position: relative; width: 100%; height: 4px; margin: -10px 0 25px; overflow: hidden; background: rgba(255, 255, 255, .1); border-radius: 4px; }
+.security-level { width: 0; height: 100%; background: #ef4444; transition: width .3s ease, background .3s; }
+
+.circle-icon { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
+.circle-icon--sm { width: 50px; height: 50px; }
+.circle-icon--md { width: 60px; height: 60px; }
+.circle-icon--lg { width: 64px; height: 64px; }
+.avatar-sm { width: 32px; height: 32px; font-size: .8rem; }
+.alert-icon { width: 24px; height: 24px; font-size: .7rem; }
+.icon-xs { font-size: .6rem; }
+.text-xs { font-size: .65rem; }
+.text-xxs { font-size: .7rem; }
+.hover-lift { transition: transform .2s ease-in-out, box-shadow .2s ease-in-out; }
+.hover-lift:hover { transform: translateY(-5px); box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175) !important; }
+.access-denied-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.access-denied-card { width: 100%; max-width: 500px; padding: 40px; text-align: center; border: 0; border-radius: 12px; }
+.access-denied-icon { margin-bottom: 16px; font-size: 72px; }
+.action-icon { width: 32px; height: 32px; padding: 0; line-height: 30px; }
+.profile-avatar { width: 38px; height: 38px; }
+.profile-avatar--large { width: 80px; height: 80px; font-size: 2rem; }
+.section-label { font-size: .75rem; letter-spacing: 1px; }
+.metric-label { font-size: .75rem; letter-spacing: .5px; }
+.text-base { font-size: 1rem; }
+.letter-spaced { letter-spacing: 1px; }
+.help-cursor { cursor: help; }
+.border-emphasis { border-width: 2px !important; }
+.beneficiary-col { width: 40%; }
+.bank-card,
+.admin-gradient { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+.admin-gradient { background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%); }
+.card-details-link { background: rgba(255, 255, 255, .05); font-size: .75rem; }
+.decorative-bank-icon { transform: translate(20%, 20%); }
+.bank-icon-xl { font-size: 150px; }
+.loan-progress { display: block; width: 100%; height: 4px; accent-color: var(--success); }
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+}
