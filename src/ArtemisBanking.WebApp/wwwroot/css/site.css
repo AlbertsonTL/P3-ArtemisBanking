@@ -547,7 +547,7 @@ body,
 }
 
 .login-card {
-    max-width: 450px;
+    max-width: 350px;
     animation: slideUp .6s ease-out;
 }
 
