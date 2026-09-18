@@ -11,16 +11,17 @@ public static class EmailTemplates
   <meta charset='utf-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <style>
-    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }}
-    .email-wrapper {{ width: 100%; background-color: #f1f5f9; padding: 40px 0; }}
-    .email-container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }}
-    .header {{ background: linear-gradient(135deg, {colorHex} 0%, #0f172a 100%); padding: 40px; text-align: center; border-bottom: 4px solid rgba(255,255,255,0.1); }}
-    .header-icon {{ display: inline-block; padding: 15px; background: rgba(255,255,255,0.15); border-radius: 50%; font-size: 32px; line-height: 1; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); backdrop-filter: blur(4px); }}
-    .header h1 {{ color: #ffffff; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; text-transform: uppercase; }}
-    .content {{ padding: 40px; color: #334155; line-height: 1.7; font-size: 16px; }}
+    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }}
+    .email-wrapper {{ width: 100%; background-color: #f8fafc; padding: 32px 12px; }}
+    .email-container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 28px rgba(15, 23, 42, .12); }}
+    .header {{ background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 34px 28px 30px; text-align: center; border-bottom: 4px solid {colorHex}; }}
+    .brand {{ color: #ffffff; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }}
+    .header-icon {{ display: inline-block; width: 58px; height: 58px; line-height: 58px; background: {colorHex}; border-radius: 50%; font-size: 28px; margin-bottom: 16px; box-shadow: 0 6px 14px rgba(15,23,42,.28); }}
+    .header h1 {{ color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -.3px; }}
+    .content {{ padding: 36px 40px; color: #334155; line-height: 1.7; font-size: 16px; }}
     .content p {{ margin: 0 0 20px 0; }}
     .greeting {{ font-size: 20px; font-weight: 600; color: #0f172a; margin-top: 0; margin-bottom: 25px; }}
-    .btn-action {{ display: block; width: max-content; margin: 30px auto; background: linear-gradient(to right, {colorHex}, #3b82f6); color: #ffffff !important; text-decoration: none; padding: 15px 35px; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); transition: transform 0.2s; text-align: center; }}
+    .btn-action {{ display: inline-block; margin: 28px auto; background: {colorHex}; color: #ffffff !important; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 15px; box-shadow: 0 8px 16px rgba(15,23,42,.16); text-align: center; }}
     .footer {{ background-color: #f8fafc; padding: 30px 40px; text-align: center; border-top: 1px solid #e2e8f0; }}
     .footer p {{ margin: 0; color: #64748b; font-size: 13px; line-height: 1.5; }}
     .highlight-card {{ background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-radius: 16px; padding: 30px; margin: 30px 0; text-align: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }}
@@ -39,6 +40,7 @@ public static class EmailTemplates
   <div class='email-wrapper'>
     <div class='email-container'>
       <div class='header'>
+      <div class='brand'>Artemis Banking</div>
         <div class='header-icon'>{icon}</div>
         <h1>{title}</h1>
       </div>
