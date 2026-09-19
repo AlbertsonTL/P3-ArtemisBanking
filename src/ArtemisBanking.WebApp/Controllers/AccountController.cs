@@ -110,22 +110,26 @@ public class AccountController : Controller
         var resetLink = Url.Action("ResetPassword", "Account",
             new { userId = user.Id, token }, Request.Scheme)!;
 
-        await _emailService.SendAsync(new EmailRequestDto
+        try
         {
-            To = user.Email!,
-            Subject = "Restablecer contraseña — Artemis Banking",
-            Body = EmailTemplates.ResetPassword($"{user.FirstName} {user.LastName}", resetLink)
-        });
+            await _emailService.SendAsync(new EmailRequestDto
+            {
+                To = user.Email!,
+                Subject = "Restablecer contraseña — Artemis Banking",
+                Body = EmailTemplates.ResetPassword($"{user.FirstName} {user.LastName}", resetLink)
+            });
+        }
+        catch (InvalidOperationException)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "No se pudo enviar el correo. Verifica la configuración SMTP e inténtalo de nuevo.");
+            return View(model);
+        }
 
-        var enviroment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        if (enviroment == "Development")
-        {
-            TempData["Success"] = $"[MODO PRUEBA]: Como no hay servidor de correos, usa este enlace para recuperar: {resetLink}";
-        }
-        else
-        {
-            TempData["Success"] = "Se ha enviado un enlace de restablecimiento a tu bandeja de entrada.";
-        }
+        TempData["Success"] =
+            $"Correo enviado correctamente a {user.Email}. " +
+            "revisa también las carpetas Spam, Promociones o No deseado.";
         
         return RedirectToAction(nameof(Login));
     }
