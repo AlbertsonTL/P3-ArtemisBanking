@@ -11,29 +11,29 @@ public static class EmailTemplates
   <meta charset='utf-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <style>
-    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #07111f; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }}
-    .email-wrapper {{ width: 100%; background-color: #07111f; padding: 32px 12px; }}
-    .email-container {{ max-width: 600px; margin: 0 auto; background-color: #0f1f33; border: 1px solid #31516b; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 28px rgba(0, 0, 0, .34); }}
+    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }}
+    .email-wrapper {{ width: 100%; background-color: #ffffff; padding: 32px 12px; }}
+    .email-container {{ max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 28px rgba(15, 23, 42, .12); }}
     .header {{ background: linear-gradient(145deg, #1e4060 0%, #0b2037 100%); padding: 34px 28px 30px; text-align: center; border-bottom: 4px solid {colorHex}; }}
     .brand {{ color: #ffffff; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }}
     .header-icon {{ display: inline-block; width: 58px; height: 58px; line-height: 58px; background: linear-gradient(135deg, #0ea5e9, #2563eb); border-radius: 50%; font-size: 28px; margin-bottom: 16px; box-shadow: 0 6px 14px rgba(14, 165, 233, .24); }}
     .header h1 {{ color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -.3px; }}
-    .content {{ padding: 36px 40px; color: #eef6ff; line-height: 1.7; font-size: 16px; }}
+    .content {{ padding: 36px 40px; color: #000000; line-height: 1.7; font-size: 16px; }}
     .content p {{ margin: 0 0 20px 0; }}
-    .greeting {{ font-size: 20px; font-weight: 600; color: #f8fafc; margin-top: 0; margin-bottom: 25px; }}
+    .greeting {{ font-size: 20px; font-weight: 600; color: #000000; margin-top: 0; margin-bottom: 25px; }}
     .btn-action {{ display: inline-block; margin: 28px auto; background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff !important; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 15px; box-shadow: 0 8px 16px rgba(14, 116, 214, .22); text-align: center; }}
-    .footer {{ background-color: #0a1729; padding: 30px 40px; text-align: center; border-top: 1px solid #31516b; }}
-    .footer p {{ margin: 0; color: #a9bdd0; font-size: 13px; line-height: 1.5; }}
-    .highlight-card {{ background: linear-gradient(135deg, #10243b 0%, #0b2037 100%); border: 1px solid #31516b; border-radius: 16px; padding: 30px; margin: 30px 0; text-align: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.12); }}
-    .highlight-amount {{ font-size: 42px; font-weight: 800; color: {colorHex}; letter-spacing: -1px; margin: 10px 0; display: block; }}
-    .highlight-label {{ font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #8caac3; font-weight: 700; }}
+    .footer {{ background-color: #ffffff; padding: 30px 40px; text-align: center; border-top: 1px solid #e2e8f0; }}
+    .footer p {{ margin: 0; color: #000000; font-size: 13px; line-height: 1.5; }}
+    .highlight-card {{ background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 30px; margin: 30px 0; text-align: center; box-shadow: inset 0 2px 4px rgba(15, 23, 42, .04); }}
+    .highlight-amount {{ font-size: 42px; font-weight: 800; color: #000000; letter-spacing: -1px; margin: 10px 0; display: block; }}
+    .highlight-label {{ font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; font-weight: 700; }}
     .data-table {{ width: 100%; border-collapse: collapse; margin: 25px 0; }}
-    .data-table tr:not(:last-child) td {{ border-bottom: 1px dotted #31516b; }}
+    .data-table tr:not(:last-child) td {{ border-bottom: 1px dotted #cbd5e1; }}
     .data-table td {{ padding: 16px 5px; vertical-align: middle; }}
-    .data-table .label {{ color: #a9bdd0; font-weight: 600; font-size: 14px; width: 45%; }}
-    .data-table .value {{ color: #eef6ff; font-weight: 600; font-size: 15px; text-align: right; }}
-    .token-box {{ background: rgba(14, 165, 233, .14); border: 1px dashed #38bdf8; color: #bae6fd; border-radius: 8px; padding: 20px; font-family: 'Courier New', Courier, monospace; font-size: 18px; font-weight: bold; text-align: center; word-break: break-all; margin: 25px 0; letter-spacing: 2px; }}
-    .notice {{ background-color: rgba(234, 88, 12, .2); border-left: 4px solid #fb923c; padding: 16px 20px; border-radius: 0 8px 8px 0; font-size: 14px; color: #fed7aa; margin: 25px 0; }}
+    .data-table .label {{ color: #000000; font-weight: 600; font-size: 14px; width: 45%; }}
+    .data-table .value {{ color: #000000; font-weight: 600; font-size: 15px; text-align: right; }}
+    .token-box {{ background: #ffffff; border: 1px dashed #0ea5e9; color: #000000; border-radius: 8px; padding: 20px; font-family: 'Courier New', Courier, monospace; font-size: 18px; font-weight: bold; text-align: center; word-break: break-all; margin: 25px 0; letter-spacing: 2px; }}
+    .notice {{ background-color: #ffffff; border-left: 4px solid #0ea5e9; padding: 16px 20px; border-radius: 0 8px 8px 0; font-size: 14px; color: #000000; margin: 25px 0; }}
   </style>
 </head>
 <body>
@@ -74,7 +74,7 @@ public static class EmailTemplates
         <p>El sistema ha detectado una solicitud segura para restablecer la contraseña administrativa de tu perfil.</p>
         <p>Si aprobaste esta acción, haz clic en el siguiente enlace cifrado para continuar con la actualización de tu credencial:</p>
         <a href='{resetLink}' class='btn-action'>Crear Nueva Contraseña</a>
-        <p style='color: #fecaca; font-weight: 600; font-size: 14px; text-align: center;'>⚠️ Este acceso temporal expirará automáticamente en 2 horas.</p>
+        <p style='color: #000000; font-weight: 600; font-size: 14px; text-align: center;'>⚠️ Este acceso temporal expirará automáticamente en 2 horas.</p>
         <div class='notice'>Si no solicitaste este cambio, te recomendamos contactar a soporte de inmediato para proteger tu liquidez.</div>"
     );
 
@@ -83,7 +83,7 @@ public static class EmailTemplates
         <h3 class='greeting'>Hola {fullName},</h3>
         <p>Se ha generado tu token único de validación para el flujo de restablecimiento de contraseña remoto:</p>
         <div class='token-box'>{token}</div>
-        <p>Transmite este valor de autorización hacia el endpoint <code style='background:rgba(4, 15, 28, .56); color:#bae6fd; padding:2px 6px; border-radius:4px;'>POST /account/reset-password</code>.</p>
+        <p>Transmite este valor de autorización hacia el endpoint <code style='background:#ffffff; color:#000000; padding:2px 6px; border-radius:4px;'>POST /account/reset-password</code>.</p>
         <p style='font-size: 14px;'>El ciclo de vida de este token caduca en exactamente 120 minutos por protocolos de seguridad bancaria.</p>"
     );
 
@@ -93,7 +93,7 @@ public static class EmailTemplates
         <p>Queremos informarte que se ha emitido una reestructuración de la tasa de interés en tu producto de financiamiento activo.</p>
         <table class='data-table'>
             <tr><td class='label'>Expediente de Préstamo</td><td class='value'>#{loanNumber}</td></tr>
-            <tr><td class='label'>Nueva Tasa Anualizada</td><td class='value' style='color:#7dd3fc;'>{nuevaTasa:N2}%</td></tr>
+            <tr><td class='label'>Nueva Tasa Anualizada</td><td class='value' style='color:#000000;'>{nuevaTasa:N2}%</td></tr>
             <tr><td class='label'>Nueva Cuota Estipulada</td><td class='value'>RD$ {nuevaCuota:N2}</td></tr>
             <tr><td class='label'>Vigencia Comercial</td><td class='value'>{proximaFecha:dd/MM/yyyy}</td></tr>
         </table>
@@ -111,7 +111,7 @@ public static class EmailTemplates
         <table class='data-table'>
             <tr><td class='label'>Plazo Amortizable</td><td class='value'>{termMonths} Meses</td></tr>
             <tr><td class='label'>Tasa de Interés Nominal</td><td class='value'>{rate}% Anual</td></tr>
-            <tr><td class='label'>Cuota Secuencial Asignada</td><td class='value' style='color:#7dd3fc;'>RD$ {monthlyPayment:N2} /mes</td></tr>
+            <tr><td class='label'>Cuota Secuencial Asignada</td><td class='value' style='color:#000000;'>RD$ {monthlyPayment:N2} /mes</td></tr>
         </table>"
     );
 
@@ -123,7 +123,7 @@ public static class EmailTemplates
         <div class='highlight-card'>
             <span class='highlight-label'>Impacto del Movimiento</span>
             <span class='highlight-amount'>RD$ {amount:N2}</span>
-            <span style='color: #8caac3; font-size: 14px; font-weight: 500; margin-top: 5px; display: block;'>{concept}</span>
+            <span style='color: #000000; font-size: 14px; font-weight: 500; margin-top: 5px; display: block;'>{concept}</span>
         </div>
 
         <table class='data-table'>
@@ -180,7 +180,7 @@ public static class EmailTemplates
     public static string LoanPaymentNotification(string clientName, decimal amountPaid, string last4AccountDigits, string loanNumber, DateTime dateTime, decimal excessAmount = 0)
     {
         string excessRow = excessAmount > 0 
-            ? $"<tr><td class='label'>Excedente Retornado</td><td class='value' style='color:#7dd3fc;'>+ RD$ {excessAmount:N2}</td></tr>" 
+            ? $"<tr><td class='label'>Excedente Retornado</td><td class='value' style='color:#000000;'>+ RD$ {excessAmount:N2}</td></tr>" 
             : "";
 
         return BuildTemplate("Abono a Préstamo", "📑", "#0ea5e9", $@"
