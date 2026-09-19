@@ -237,4 +237,4 @@ git push origin feature/nombre-funcionalidad
 
 ---
 
-*Proyecto Final Programación 3 — ITLA 2026 © Artemis Banking Team*
+*Proyecto Programación 3 — ITLA 2026 © Artemis Banking Team*
