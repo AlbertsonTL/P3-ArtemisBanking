@@ -91,20 +91,20 @@
                             </td>
                             <td class="text-end px-4">
                                 <div class="d-flex justify-content-end gap-2">
-                                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-outline-primary btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 30px;" title="Editar Info">
+                                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-outline-primary btn-sm rounded-circle action-icon" title="Editar Info">
                                         <i class="fas fa-pen"></i>
                                     </a>
                                     
                                     <form asp-action="ToggleStatus" asp-route-id="@user.Id" method="post" class="d-inline">
                                         @if (user.IsActive)
                                         {
-                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 30px;" title="Desactivar" onclick="return confirm('¿Bloquear a este usuario?');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle action-icon" title="Desactivar" onclick="return confirm('¿Bloquear a este usuario?');">
                                                 <i class="fas fa-user-lock"></i>
                                             </button>
                                         }
                                         else
                                         {
-                                            <button type="submit" class="btn btn-outline-success btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 30px;" title="Activar" onclick="return confirm('¿Activar a este usuario?');">
+                                            <button type="submit" class="btn btn-outline-success btn-sm rounded-circle action-icon" title="Activar" onclick="return confirm('¿Activar a este usuario?');">
                                                 <i class="fas fa-user-check"></i>
                                             </button>
                                         }

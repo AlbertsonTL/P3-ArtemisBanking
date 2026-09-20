@@ -42,7 +42,7 @@
                     {
                         <tr>
                             <td class="px-4 fw-bold">
-                                <span class="badge bg-secondary bg-opacity-10 text-dark px-3 py-2 rounded-pill font-monospace" style="letter-spacing: 1px;">
+                                <span class="badge bg-secondary bg-opacity-10 text-dark px-3 py-2 rounded-pill font-monospace letter-spaced">
                                     @acc.AccountNumber
                                 </span>
                             </td>
@@ -75,7 +75,7 @@
                                 {
                                     if(acc.AccountType == AccountType.Main)
                                     {
-                                        <span class="badge bg-light text-muted fw-normal fst-italic border border-light" title="La cuenta principal es blindada y no puede ser cerrada." style="cursor: help;">Intocable <i class="fas fa-shield-alt ms-1"></i></span>
+                                        <span title="La cuenta principal es blindada y no puede ser cerrada.">Intocable <i class="fas fa-shield-alt ms-1"></i></span>
                                     }
                                     else
                                     {

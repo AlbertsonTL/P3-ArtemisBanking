@@ -55,7 +55,7 @@
             @foreach (var card in Model.CreditCards)
             {
                 <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 bg-slate-900 border-0 text-white shadow-lg overflow-hidden position-relative" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                    <div class="card h-100 bg-slate-900 border-0 text-white shadow-lg overflow-hidden position-relative bank-card">
                         <div class="card-body p-4 z-1">
                             <div class="d-flex justify-content-between align-items-start mb-4">
                                 <i class="fas fa-microchip text-warning fs-3 opacity-75"></i>
@@ -64,29 +64,29 @@
                             <div class="mb-4">
                                 <h5 class="font-monospace tracking-widest mb-1">**** **** **** @card.CardNumber.Substring(card.CardNumber.Length - 4)</h5>
                                 <div class="d-flex gap-3 mt-1">
-                                    <span class="text-slate-400 small text-uppercase" style="font-size: 0.65rem;">VENCE: @card.ExpirationDate</span>
-                                    <span class="text-slate-400 small text-uppercase" style="font-size: 0.65rem;">HOLDER: @User.Identity?.Name</span>
+                                    <span class="text-slate-400 small text-uppercase text-xs">VENCE: @card.ExpirationDate</span>
+                                    <span class="text-slate-400 small text-uppercase text-xs">HOLDER: @User.Identity?.Name</span>
                                 </div>
                             </div>
                             <div class="row pt-2 border-top border-secondary border-opacity-25">
                                 <div class="col-6">
-                                    <p class="text-slate-400 small mb-0" style="font-size: 0.65rem;">DEUDA ACTUAL</p>
+                                    <p class="text-slate-400 small mb-0 text-xs">DEUDA ACTUAL</p>
                                     <h6 class="fw-bold mb-0">RD$ @card.DebtAmount.ToString("N2")</h6>
                                 </div>
                                 <div class="col-6 text-end">
-                                    <p class="text-slate-400 small mb-0" style="font-size: 0.65rem;">CRÉDITO DISPO</p>
+                                    <p class="text-slate-400 small mb-0 text-xs">CRÉDITO DISPO</p>
                                     <h6 class="mb-0 fw-bold text-success">RD$ @((card.CreditLimit - card.DebtAmount).ToString("N2"))</h6>
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer border-0 p-0 z-1">
-                            <a asp-action="CardDetails" asp-route-id="@card.Id" class="btn btn-link text-white text-decoration-none w-100 py-2 small opacity-75 hover-opacity-100" style="background: rgba(255,255,255,0.05); font-size: 0.75rem;">
-                                Detalles de Consumos <i class="fas fa-chevron-right ms-1" style="font-size: 0.6rem;"></i>
+                            <a asp-action="CardDetails" asp-route-id="@card.Id" class="btn btn-link text-white text-decoration-none w-100 py-2 small opacity-75 hover-opacity-100 card-details-link">
+                                Detalles de Consumos <i class="fas fa-chevron-right ms-1 icon-xs"></i>
                             </a>
                         </div>
                         <!-- Decorative element -->
-                        <div class="position-absolute bottom-0 end-0 opacity-10" style="transform: translate(20%, 20%);">
-                             <i class="fas fa-university" style="font-size: 150px;"></i>
+                        <div class="position-absolute bottom-0 end-0 opacity-10 decorative-bank-icon">
+                             <i class="fas fa-university bank-icon-xl"></i>
                         </div>
                     </div>
                 </div>
@@ -124,15 +124,15 @@
                                     <span class="text-slate-400 small fw-bold font-monospace"># @loan.LoanNumber</span>
                                     <h6 class="fw-bold mt-1 mb-0">Préstamo Personal</h6>
                                 </div>
-                                <span class="badge bg-success-subtle text-success border-0 rounded-pill px-3 py-1 fw-bold" style="font-size: 0.65rem;">AL DÍA</span>
+                                <span class="badge bg-success-subtle text-success border-0 rounded-pill px-3 py-1 fw-bold text-xs">AL DÍA</span>
                             </div>
                             <div class="row mt-4 mb-3">
                                 <div class="col-6">
-                                    <p class="text-muted small mb-1" style="font-size: 0.7rem;">DEUDA TOTAL</p>
+                                    <p class="text-muted small mb-1 text-xxs">DEUDA TOTAL</p>
                                     <h6 class="fw-bold text-slate-700">RD$ @loan.Amount.ToString("N2")</h6>
                                 </div>
                                 <div class="col-6 text-end">
-                                    <p class="text-muted small mb-1" style="font-size: 0.7rem;">PRÓXIMA CUOTA</p>
+                                    <p class="text-muted small mb-1 text-xxs">PRÓXIMA CUOTA</p>
                                     <h6 class="fw-bold text-primary">RD$ @loan.MonthlyPayment.ToString("N2")</h6>
                                 </div>
                             </div>

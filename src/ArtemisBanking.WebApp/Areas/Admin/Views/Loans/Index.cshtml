@@ -119,9 +119,7 @@
                             </td>
                             <td class="text-end fw-bold text-danger">
                                 @loan.RemainingDebt.ToString("N2")
-                                <div class="progress mt-1" style="height:4px;" title="@Math.Round(percentagePaid,1)% Pagado">
-                                    <div class="progress-bar bg-success" style="width:@percentagePaid%;"></div>
-                                </div>
+                                <progress class="progress loan-progress mt-1" value="@percentagePaid" max="100" title="@Math.Round(percentagePaid,1)% Pagado"></progress>
                             </td>
                             <td class="text-center text-dark">@loan.TermMonths</td>
                             <td class="text-center px-4">
