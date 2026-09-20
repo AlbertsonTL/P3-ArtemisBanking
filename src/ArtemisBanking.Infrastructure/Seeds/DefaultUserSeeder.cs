@@ -19,7 +19,7 @@ public static class DefaultUserSeeder
     private static readonly SeedUser[] DefaultUsers =
     {
         new() { FirstName="Admin", LastName="Principal", IdentityCard="000-0000000-1",
-                UserName="admin", Email="1000.gerald.manuel@gmail.com", Password="Admin@12345", Role=UserRole.Admin },
+                UserName="admin", Email="admin@artemisbanking.com", Password="Admin@12345", Role=UserRole.Admin },
         new() { FirstName="Cajero", LastName="Principal", IdentityCard="000-0000000-2",
                 UserName="cajero", Email="cajero@artemisbanking.com", Password="Cajero@12345", Role=UserRole.Cajero },
         new() { FirstName="Cliente", LastName="Demo", IdentityCard="000-0000000-3",
