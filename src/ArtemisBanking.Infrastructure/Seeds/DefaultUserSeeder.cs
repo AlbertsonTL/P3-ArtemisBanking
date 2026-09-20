@@ -37,6 +37,7 @@ public static class DefaultUserSeeder
         await ApplyMigrationsAsync(dbContext, logger);
         await SeedRolesAsync(roleManager, logger);
         await SeedUsersAsync(userManager, dbContext, logger);
+        await SeedDemoBankingDataAsync(userManager, dbContext, logger);
     }
 
     private static async Task ApplyMigrationsAsync(AppDbContext dbContext, ILogger logger)
@@ -209,6 +210,227 @@ public static class DefaultUserSeeder
         });
         await db.SaveChangesAsync();
         logger.LogInformation("Cuenta principal #{N} creada para '{U}'.", number, client.UserName);
+    }
+
+    private static async Task SeedDemoBankingDataAsync(
+        UserManager<ApplicationUser> userManager,
+        AppDbContext db,
+        ILogger logger)
+    {
+        var client = await userManager.FindByNameAsync("cliente");
+        var admin = await userManager.FindByNameAsync("admin");
+        var cashier = await userManager.FindByNameAsync("cajero");
+
+        if (client is null || admin is null || cashier is null)
+        {
+            logger.LogWarning("No se cargaron los datos demo: faltan usuarios base.");
+            return;
+        }
+
+        var secondClient = await EnsureDemoClientAsync(userManager, logger);
+        var mainAccount = await db.SavingsAccounts
+            .SingleOrDefaultAsync(a => a.ClientId == client.Id && a.AccountType == AccountType.Main);
+        if (mainAccount is null)
+        {
+            logger.LogWarning("No se cargaron los datos demo: el cliente no tiene cuenta principal.");
+            return;
+        }
+
+        var secondaryAccount = await EnsureDemoAccountAsync(
+            db, "200000002", 12000m, AccountType.Secondary, client.Id, logger);
+        var beneficiaryAccount = await EnsureDemoAccountAsync(
+            db, "300000003", 25000m, AccountType.Main, secondClient.Id, logger);
+
+        var commerce = await db.Commerces
+            .SingleOrDefaultAsync(c => c.Name == "Artemis Market");
+        if (commerce is null)
+        {
+            commerce = new Commerce { Name = "Artemis Market", IsActive = true };
+            db.Commerces.Add(commerce);
+            await db.SaveChangesAsync();
+        }
+
+        if (!await db.CreditCards.AnyAsync(c => c.CardNumber == "4111111111111111"))
+        {
+            db.CreditCards.Add(new CreditCard
+            {
+                CardNumber = "4111111111111111",
+                CreditLimit = 100000m,
+                DebtAmount = 2500m,
+                ExpirationDate = "12/29",
+                CVCHashed = CryptoHelper.HashSHA256("123"),
+                IsActive = true,
+                ClientId = client.Id,
+                AdminId = admin.Id
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var card = await db.CreditCards
+            .SingleAsync(c => c.CardNumber == "4111111111111111");
+        if (!await db.CardConsumptions.AnyAsync(c => c.CreditCardId == card.Id))
+        {
+            db.CardConsumptions.Add(new CardConsumption
+            {
+                CreditCardId = card.Id,
+                CommerceId = commerce.Id,
+                CommerceName = commerce.Name,
+                Amount = 2500m,
+                Date = DateTime.UtcNow.AddDays(-2),
+                Status = ConsumptionStatus.Approved
+            });
+        }
+
+        if (!await db.Beneficiaries.AnyAsync(
+                b => b.ClientId == client.Id && b.AccountNumber == beneficiaryAccount.AccountNumber))
+        {
+            db.Beneficiaries.Add(new Beneficiary
+            {
+                ClientId = client.Id,
+                AccountNumber = beneficiaryAccount.AccountNumber,
+                Alias = "Cliente demo 2"
+            });
+        }
+
+        if (!await db.Transactions.AnyAsync(
+                t => t.SavingsAccountId == mainAccount.Id &&
+                     t.Category == TransactionCategory.CashierDeposit))
+        {
+            mainAccount.Balance = 50000m;
+            db.Transactions.Add(new Transaction
+            {
+                Type = TransactionType.Credit,
+                Amount = 50000m,
+                Date = DateTime.UtcNow.AddDays(-3),
+                Status = TransactionStatus.Approved,
+                Category = TransactionCategory.CashierDeposit,
+                Origin = "Caja principal",
+                Beneficiary = mainAccount.AccountNumber,
+                CashierId = cashier.Id,
+                SavingsAccountId = mainAccount.Id
+            });
+        }
+
+        if (!await db.Transactions.AnyAsync(
+                t => t.SavingsAccountId == mainAccount.Id &&
+                     t.Category == TransactionCategory.TransferOwnAccounts))
+        {
+            mainAccount.Balance -= 1500m;
+            secondaryAccount.Balance += 1500m;
+            db.Transactions.AddRange(
+                new Transaction
+                {
+                    Type = TransactionType.Debit,
+                    Amount = 1500m,
+                    Date = DateTime.UtcNow.AddDays(-1),
+                    Status = TransactionStatus.Approved,
+                    Category = TransactionCategory.TransferOwnAccounts,
+                    Origin = mainAccount.AccountNumber,
+                    Beneficiary = secondaryAccount.AccountNumber,
+                    SavingsAccountId = mainAccount.Id
+                },
+                new Transaction
+                {
+                    Type = TransactionType.Credit,
+                    Amount = 1500m,
+                    Date = DateTime.UtcNow.AddDays(-1),
+                    Status = TransactionStatus.Approved,
+                    Category = TransactionCategory.TransferOwnAccounts,
+                    Origin = mainAccount.AccountNumber,
+                    Beneficiary = secondaryAccount.AccountNumber,
+                    SavingsAccountId = secondaryAccount.Id
+                });
+        }
+
+        if (!await db.Transactions.AnyAsync(
+                t => t.SavingsAccountId == mainAccount.Id &&
+                     t.Category == TransactionCategory.TransferToBeneficiary))
+        {
+            mainAccount.Balance -= 750m;
+            beneficiaryAccount.Balance += 750m;
+            db.Transactions.AddRange(
+                new Transaction
+                {
+                    Type = TransactionType.Debit,
+                    Amount = 750m,
+                    Date = DateTime.UtcNow.AddHours(-12),
+                    Status = TransactionStatus.Approved,
+                    Category = TransactionCategory.TransferToBeneficiary,
+                    Origin = mainAccount.AccountNumber,
+                    Beneficiary = beneficiaryAccount.AccountNumber,
+                    SavingsAccountId = mainAccount.Id
+                },
+                new Transaction
+                {
+                    Type = TransactionType.Credit,
+                    Amount = 750m,
+                    Date = DateTime.UtcNow.AddHours(-12),
+                    Status = TransactionStatus.Approved,
+                    Category = TransactionCategory.TransferToBeneficiary,
+                    Origin = mainAccount.AccountNumber,
+                    Beneficiary = beneficiaryAccount.AccountNumber,
+                    SavingsAccountId = beneficiaryAccount.Id
+                });
+        }
+
+        await db.SaveChangesAsync();
+        logger.LogInformation("Datos bancarios demo verificados para pruebas de cuentas, tarjetas y transferencias.");
+    }
+
+    private static async Task<ApplicationUser> EnsureDemoClientAsync(
+        UserManager<ApplicationUser> userManager, ILogger logger)
+    {
+        var client = await userManager.FindByNameAsync("cliente2");
+        if (client is not null) return client;
+
+        client = new ApplicationUser
+        {
+            FirstName = "Cliente",
+            LastName = "Demo 2",
+            IdentityCard = "000-0000000-4",
+            UserName = "cliente2",
+            Email = "cliente2@artemisbanking.com",
+            EmailConfirmed = true,
+            IsActive = true,
+            Role = UserRole.Cliente
+        };
+
+        var result = await userManager.CreateAsync(client, "Cliente2@12345");
+        if (!result.Succeeded)
+        {
+            var errors = string.Join("; ", result.Errors.Select(e => $"[{e.Code}] {e.Description}"));
+            throw new InvalidOperationException($"No se pudo crear el usuario demo cliente2: {errors}");
+        }
+
+        await userManager.AddToRoleAsync(client, UserRole.Cliente.ToString());
+        logger.LogInformation("Usuario demo 'cliente2' creado.");
+        return client;
+    }
+
+    private static async Task<SavingsAccount> EnsureDemoAccountAsync(
+        AppDbContext db,
+        string accountNumber,
+        decimal balance,
+        AccountType accountType,
+        string clientId,
+        ILogger logger)
+    {
+        var account = await db.SavingsAccounts
+            .SingleOrDefaultAsync(a => a.AccountNumber == accountNumber);
+        if (account is not null) return account;
+
+        account = new SavingsAccount
+        {
+            AccountNumber = accountNumber,
+            Balance = balance,
+            AccountType = accountType,
+            IsActive = true,
+            ClientId = clientId
+        };
+        db.SavingsAccounts.Add(account);
+        await db.SaveChangesAsync();
+        logger.LogInformation("Cuenta demo #{Number} creada.", accountNumber);
+        return account;
     }
 
     private sealed class SeedUser
