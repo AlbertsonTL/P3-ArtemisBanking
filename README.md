@@ -1,14 +1,8 @@
-# 🏦 Artemis Banking - P3-Proyecto Final
-
-
-## Descripcion
-Mini proyecto final: Artemis Banking
+# 🏦 Mini Proyecto: Artemis Banking
 
 Sistema bancario en línea desarrollado con **ASP.NET Core 8** siguiendo **Onion Architecture**.  
 
-Desarrollar una plataforma de banca en línea sobre ASP.NET Core MVC (versión 8 o 9) que permita gestionar de manera integral los préstamos, administrar tarjetas de crédito, operar cuentas de ahorro, procesar pagos de préstamos y tarjetas, así como realizar provisión de fondos y transferencias entre cuentas, todo ello dentro de un marco seguro y basado en roles para administrador, cajero y cliente.
-
-`Proyecto Final Programación 3 — ITLA 2026.`
+Desarrollar una plataforma de banca en línea sobre ASP.NET Core MVC (versión 8) que permita gestionar de manera integral los préstamos, administrar tarjetas de crédito, operar cuentas de ahorro, procesar pagos de préstamos y tarjetas, así como realizar provisión de fondos y transferencias entre cuentas, todo ello dentro de un marco seguro y basado en roles para administrador, cajero y cliente.
 
 ---
 
@@ -22,7 +16,8 @@ ArtemisBanking/
     ├── ArtemisBanking.Shared          ← Helpers, modelos transversales (sin dependencias)
     ├── ArtemisBanking.Infrastructure  ← EF Core, Identity, Repositorios, AutoMapper, Email
     ├── ArtemisBanking.WebApp          ← MVC (Admin · Cliente · Cajero)
-    └── ArtemisBanking.WebAPI          ← REST API con JWT + Swagger
+    ├── ArtemisBanking.WebAPI          ← REST API con JWT + Swagger
+    └── ArtemisBanking.Functions       ← Jobs programados para cuotas atrasadas
 ```
 
 **Flujo de dependencias:**
@@ -73,11 +68,10 @@ cd P3-Final-ArtemisBanking
 git checkout develop
 ```
 
-### 2. Configurar connection string local
+### 2. Configurar la configuración local
 
-Cada desarrollador crea su propio archivo local (no se sube al repo):
-
-El appsettings.json esta en el drive
+Los archivos `appsettings.json` incluidos en el repositorio contienen únicamente
+valores de desarrollo y placeholders.
 
 **`src/ArtemisBanking.WebApp/appsettings.json`**
 ```json
@@ -86,7 +80,7 @@ El appsettings.json esta en el drive
     "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=ArtemisBankingDb;Trusted_Connection=True;MultipleActiveResultSets=true"
   },
   "MailSettings": {
-    "Host": "EMAIL_USER",
+    "Host": "EMAIL_HOST",
     "Port": "EMAIL_PORT",
     "SenderName": "Artemis Banking",
     "SenderEmail": "EMAIL_USER",
@@ -107,7 +101,6 @@ El appsettings.json esta en el drive
     "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=ArtemisBankingDb;Trusted_Connection=True;MultipleActiveResultSets=true"
   },
   "Jwt": {
-    "Key": "ArtemisBanking_SuperSecretKey_2026_Min32Chars!",
     "Issuer": "ArtemisBankingAPI",
     "Audience": "ArtemisBankingClients",
     "ExpirationHours": 8
@@ -127,20 +120,43 @@ El appsettings.json esta en el drive
 }
 ```
 
-> ⚠️ Estos archivos están en `.gitignore` — nunca se suben al repositorio.
+Configura la clave JWT mediante User Secrets antes de iniciar el WebAPI:
+
+```powershell
+dotnet user-secrets set "Jwt:Key" "<clave-local-segura-de-al-menos-32-caracteres>" `
+  --project .\src\ArtemisBanking.WebAPI
+```
+
+Para configurar las credenciales de correo sin guardarlas en Git, utiliza el
+mismo mecanismo:
+
+```powershell
+dotnet user-secrets set "MailSettings:Host" "<servidor-smtp>" `
+  --project .\src\ArtemisBanking.WebAPI
+dotnet user-secrets set "MailSettings:Port" "587" `
+  --project .\src\ArtemisBanking.WebAPI
+dotnet user-secrets set "MailSettings:SenderEmail" "<correo>" `
+  --project .\src\ArtemisBanking.WebAPI
+dotnet user-secrets set "MailSettings:UserName" "<usuario-smtp>" `
+  --project .\src\ArtemisBanking.WebAPI
+dotnet user-secrets set "MailSettings:Password" "<contraseña-o-app-password>" `
+  --project .\src\ArtemisBanking.WebAPI
+```
 
 ### 3. Generar migración local
 
-```bash
-cd src/ArtemisBanking.WebApp
-
-dotnet ef migrations add InitialCreate --project ../ArtemisBanking.Infrastructure
+```powershell
+dotnet ef migrations add InitialCreate `
+  --project .\src\ArtemisBanking.Infrastructure `
+  --startup-project .\src\ArtemisBanking.WebApp
 ```
 
 ### 4. Aplicar migración y crear la base de datos
 
-```bash
-dotnet ef database update --project ../ArtemisBanking.Infrastructure
+```powershell
+dotnet ef database update `
+  --project .\src\ArtemisBanking.Infrastructure `
+  --startup-project .\src\ArtemisBanking.WebApp
 ```
 
 ### 5. Correr la aplicación
@@ -149,13 +165,13 @@ dotnet ef database update --project ../ArtemisBanking.Infrastructure
 ```bash
 dotnet run --project src/ArtemisBanking.WebApp
 ```
-`Disponible en: https://localhost:5001`
+`Disponible en: https://localhost:5291`
 
 **WebAPI:**
 ```bash
 dotnet run --project src/ArtemisBanking.WebAPI
 ```
-`Swagger UI en: https://localhost:7001/swagger`
+`Swagger UI en: https://localhost:5018/swagger`
 
 ---
 
@@ -170,9 +186,10 @@ Al iniciar la aplicación por primera vez se crean automáticamente:
 | `cliente` | `Cliente@12345` | Cliente |
 
 > El seeder es **idempotente**: si los usuarios ya existen, no los duplica.  
-> El cliente demo tiene una cuenta de ahorro principal creada con saldo `$0.00`.
-
----
+> Además de los usuarios, el seeder prepara datos demo idempotentes para probar el flujo completo:
+> cuenta secundaria `200000002`, cliente receptor `cliente2` (cuenta `300000003`),
+> tarjeta `4111111111111111`, comercio, consumo aprobado, beneficiario y transferencias.
+> La tarjeta usa CVC de prueba `123` (se guarda únicamente su hash).
 
 ## 🛠 Tecnologías
 
@@ -182,8 +199,8 @@ Al iniciar la aplicación por primera vez se crean automáticamente:
 | ASP.NET Core 8 Web API | API REST |
 | Entity Framework Core 8 | ORM — Code First |
 | ASP.NET Identity | Autenticación y roles |
-| AutoMapper 12 | Mapeo Entity ↔ DTO ↔ ViewModel |
-| JWT Bearer | Seguridad API |
+| AutoMapper 13 | Mapeo Entity ↔ DTO ↔ ViewModel |
+| JWT | Autenticación y seguridad API |
 | MailKit | Envío de correos |
 | Hangfire | Jobs en segundo plano (cuotas atrasadas) |
 | Swagger / Swashbuckle | Documentación API |
@@ -231,9 +248,8 @@ git push origin feature/nombre-funcionalidad
 ## 📜 Notas importantes
 
 - Todos los montos financieros usan `decimal(18,2)` — nunca `float` ni `double`.
-- El CVC de tarjetas se almacena cifrado con **SHA-256** (nunca en texto plano).
+- El CVC de tarjetas se almacena mediante un **hash SHA-256** (nunca en texto plano).
 - Los números de cuenta (9 dígitos) y tarjeta (16 dígitos) son únicos en todo el sistema.
-- Las migraciones **no se suben al repositorio** — cada dev las genera localmente con `dotnet ef migrations add`.
 
 ---
 

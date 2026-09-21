@@ -1,16 +1,16 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace ArtemisBanking.Infrastructure.Migrations
 {
+    /// <inheritdoc />
     public partial class InitialCreate : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // ── ASP.NET Identity tables ──────────────────────────────────────
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -183,33 +183,55 @@ namespace ArtemisBanking.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            // ── Domain tables ────────────────────────────────────────────────
-
             migrationBuilder.CreateTable(
-                name: "SavingsAccounts",
+                name: "Beneficiaries",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AccountNumber = table.Column<string>(type: "nvarchar(9)", maxLength: 9, nullable: false),
-                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    AccountType = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    Alias = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    AdminId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SavingsAccounts", x => x.Id);
+                    table.PrimaryKey("PK_Beneficiaries", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SavingsAccounts_AspNetUsers_AdminId",
+                        name: "FK_Beneficiaries_AspNetUsers_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CreditCards",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CardNumber = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
+                    CreditLimit = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DebtAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ExpirationDate = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
+                    CVCHashed = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AdminId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CreditCards", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CreditCards_AspNetUsers_AdminId",
                         column: x => x.AdminId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_SavingsAccounts_AspNetUsers_ClientId",
+                        name: "FK_CreditCards_AspNetUsers_ClientId",
                         column: x => x.ClientId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -252,32 +274,30 @@ namespace ArtemisBanking.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CreditCards",
+                name: "SavingsAccounts",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CardNumber = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
-                    CreditLimit = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DebtAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ExpirationDate = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
-                    CVCHashed = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    AccountNumber = table.Column<string>(type: "nvarchar(9)", maxLength: 9, nullable: false),
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    AccountType = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    AdminId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    AdminId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CreditCards", x => x.Id);
+                    table.PrimaryKey("PK_SavingsAccounts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CreditCards_AspNetUsers_AdminId",
+                        name: "FK_SavingsAccounts_AspNetUsers_AdminId",
                         column: x => x.AdminId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_CreditCards_AspNetUsers_ClientId",
+                        name: "FK_SavingsAccounts_AspNetUsers_ClientId",
                         column: x => x.ClientId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -285,23 +305,31 @@ namespace ArtemisBanking.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Beneficiaries",
+                name: "CardConsumptions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AccountNumber = table.Column<string>(type: "nvarchar(9)", maxLength: 9, nullable: false),
-                    Alias = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CommerceName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreditCardId = table.Column<int>(type: "int", nullable: false),
+                    CommerceId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Beneficiaries", x => x.Id);
+                    table.PrimaryKey("PK_CardConsumptions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Beneficiaries_AspNetUsers_ClientId",
-                        column: x => x.ClientId,
-                        principalTable: "AspNetUsers",
+                        name: "FK_CardConsumptions_Commerce_CommerceId",
+                        column: x => x.CommerceId,
+                        principalTable: "Commerce",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_CardConsumptions_CreditCards_CreditCardId",
+                        column: x => x.CreditCardId,
+                        principalTable: "CreditCards",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -312,12 +340,12 @@ namespace ArtemisBanking.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    LoanId = table.Column<int>(type: "int", nullable: false),
-                    QuotaAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    QuotaAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     IsPaid = table.Column<bool>(type: "bit", nullable: false),
                     IsLate = table.Column<bool>(type: "bit", nullable: false),
-                    PaidAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    PaidAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LoanId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -343,7 +371,7 @@ namespace ArtemisBanking.Infrastructure.Migrations
                     Category = table.Column<int>(type: "int", nullable: false),
                     Origin = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Beneficiary = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    CashierId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    CashierId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SavingsAccountId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -355,89 +383,179 @@ namespace ArtemisBanking.Infrastructure.Migrations
                         principalTable: "SavingsAccounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Transactions_AspNetUsers_CashierId",
-                        column: x => x.CashierId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "CardConsumptions",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CreditCardId = table.Column<int>(type: "int", nullable: false),
-                    CommerceId = table.Column<int>(type: "int", nullable: true),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CommerceName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CardConsumptions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_CardConsumptions_CreditCards_CreditCardId",
-                        column: x => x.CreditCardId,
-                        principalTable: "CreditCards",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_CardConsumptions_Commerce_CommerceId",
-                        column: x => x.CommerceId,
-                        principalTable: "Commerce",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                });
+            migrationBuilder.CreateIndex(
+                name: "IX_AmortizationEntries_LoanId",
+                table: "AmortizationEntries",
+                column: "LoanId");
 
-            // ── Indexes ──────────────────────────────────────────────────────
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetRoleClaims_RoleId",
+                table: "AspNetRoleClaims",
+                column: "RoleId");
 
-            migrationBuilder.CreateIndex(name: "IX_AspNetRoleClaims_RoleId", table: "AspNetRoleClaims", column: "RoleId");
-            migrationBuilder.CreateIndex(name: "RoleNameIndex", table: "AspNetRoles", column: "NormalizedName", unique: true, filter: "[NormalizedName] IS NOT NULL");
-            migrationBuilder.CreateIndex(name: "IX_AspNetUserClaims_UserId", table: "AspNetUserClaims", column: "UserId");
-            migrationBuilder.CreateIndex(name: "IX_AspNetUserLogins_UserId", table: "AspNetUserLogins", column: "UserId");
-            migrationBuilder.CreateIndex(name: "IX_AspNetUserRoles_RoleId", table: "AspNetUserRoles", column: "RoleId");
-            migrationBuilder.CreateIndex(name: "EmailIndex", table: "AspNetUsers", column: "NormalizedEmail");
-            migrationBuilder.CreateIndex(name: "IX_AspNetUsers_CommerceId", table: "AspNetUsers", column: "CommerceId");
-            migrationBuilder.CreateIndex(name: "IX_AspNetUsers_IdentityCard", table: "AspNetUsers", column: "IdentityCard", unique: true);
-            migrationBuilder.CreateIndex(name: "UserNameIndex", table: "AspNetUsers", column: "NormalizedUserName", unique: true, filter: "[NormalizedUserName] IS NOT NULL");
-            migrationBuilder.CreateIndex(name: "IX_SavingsAccounts_AccountNumber", table: "SavingsAccounts", column: "AccountNumber", unique: true);
-            migrationBuilder.CreateIndex(name: "IX_SavingsAccounts_AdminId", table: "SavingsAccounts", column: "AdminId");
-            migrationBuilder.CreateIndex(name: "IX_SavingsAccounts_ClientId", table: "SavingsAccounts", column: "ClientId");
-            migrationBuilder.CreateIndex(name: "IX_Loans_LoanNumber", table: "Loans", column: "LoanNumber", unique: true);
-            migrationBuilder.CreateIndex(name: "IX_Loans_AdminId", table: "Loans", column: "AdminId");
-            migrationBuilder.CreateIndex(name: "IX_Loans_ClientId", table: "Loans", column: "ClientId");
-            migrationBuilder.CreateIndex(name: "IX_CreditCards_CardNumber", table: "CreditCards", column: "CardNumber", unique: true);
-            migrationBuilder.CreateIndex(name: "IX_CreditCards_AdminId", table: "CreditCards", column: "AdminId");
-            migrationBuilder.CreateIndex(name: "IX_CreditCards_ClientId", table: "CreditCards", column: "ClientId");
-            migrationBuilder.CreateIndex(name: "IX_AmortizationEntries_LoanId", table: "AmortizationEntries", column: "LoanId");
-            migrationBuilder.CreateIndex(name: "IX_Transactions_SavingsAccountId", table: "Transactions", column: "SavingsAccountId");
-            migrationBuilder.CreateIndex(name: "IX_Transactions_CashierId", table: "Transactions", column: "CashierId");
-            migrationBuilder.CreateIndex(name: "IX_Beneficiaries_ClientId", table: "Beneficiaries", column: "ClientId");
-            migrationBuilder.CreateIndex(name: "IX_CardConsumptions_CreditCardId", table: "CardConsumptions", column: "CreditCardId");
-            migrationBuilder.CreateIndex(name: "IX_CardConsumptions_CommerceId", table: "CardConsumptions", column: "CommerceId");
+            migrationBuilder.CreateIndex(
+                name: "RoleNameIndex",
+                table: "AspNetRoles",
+                column: "NormalizedName",
+                unique: true,
+                filter: "[NormalizedName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserClaims_UserId",
+                table: "AspNetUserClaims",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserLogins_UserId",
+                table: "AspNetUserLogins",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserRoles_RoleId",
+                table: "AspNetUserRoles",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "EmailIndex",
+                table: "AspNetUsers",
+                column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_CommerceId",
+                table: "AspNetUsers",
+                column: "CommerceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_IdentityCard",
+                table: "AspNetUsers",
+                column: "IdentityCard",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "UserNameIndex",
+                table: "AspNetUsers",
+                column: "NormalizedUserName",
+                unique: true,
+                filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Beneficiaries_ClientId",
+                table: "Beneficiaries",
+                column: "ClientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CardConsumptions_CommerceId",
+                table: "CardConsumptions",
+                column: "CommerceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CardConsumptions_CreditCardId",
+                table: "CardConsumptions",
+                column: "CreditCardId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CreditCards_AdminId",
+                table: "CreditCards",
+                column: "AdminId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CreditCards_CardNumber",
+                table: "CreditCards",
+                column: "CardNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CreditCards_ClientId",
+                table: "CreditCards",
+                column: "ClientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Loans_AdminId",
+                table: "Loans",
+                column: "AdminId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Loans_ClientId",
+                table: "Loans",
+                column: "ClientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Loans_LoanNumber",
+                table: "Loans",
+                column: "LoanNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavingsAccounts_AccountNumber",
+                table: "SavingsAccounts",
+                column: "AccountNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavingsAccounts_AdminId",
+                table: "SavingsAccounts",
+                column: "AdminId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavingsAccounts_ClientId",
+                table: "SavingsAccounts",
+                column: "ClientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_SavingsAccountId",
+                table: "Transactions",
+                column: "SavingsAccountId");
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(name: "AspNetUserTokens");
-            migrationBuilder.DropTable(name: "AspNetUserRoles");
-            migrationBuilder.DropTable(name: "AspNetUserLogins");
-            migrationBuilder.DropTable(name: "AspNetUserClaims");
-            migrationBuilder.DropTable(name: "AspNetRoleClaims");
-            migrationBuilder.DropTable(name: "AspNetRoles");
-            migrationBuilder.DropTable(name: "CardConsumptions");
-            migrationBuilder.DropTable(name: "AmortizationEntries");
-            migrationBuilder.DropTable(name: "Transactions");
-            migrationBuilder.DropTable(name: "Beneficiaries");
-            migrationBuilder.DropTable(name: "CreditCards");
-            migrationBuilder.DropTable(name: "Loans");
-            migrationBuilder.DropTable(name: "SavingsAccounts");
-            migrationBuilder.DropTable(name: "AspNetUsers");
-            migrationBuilder.DropTable(name: "Commerce");
+            migrationBuilder.DropTable(
+                name: "AmortizationEntries");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoleClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserLogins");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserRoles");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Beneficiaries");
+
+            migrationBuilder.DropTable(
+                name: "CardConsumptions");
+
+            migrationBuilder.DropTable(
+                name: "Transactions");
+
+            migrationBuilder.DropTable(
+                name: "Loans");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "CreditCards");
+
+            migrationBuilder.DropTable(
+                name: "SavingsAccounts");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Commerce");
         }
     }
 }
