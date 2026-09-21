@@ -129,6 +129,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         {
             e.HasKey(cm => cm.Id);
             e.Property(cm => cm.Name).HasMaxLength(200);
+            e.ToTable("Commerce");
         });
     }
 }

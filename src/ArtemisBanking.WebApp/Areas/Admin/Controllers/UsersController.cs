@@ -4,6 +4,7 @@ using ArtemisBanking.Application.Interfaces.Repositories;
 using ArtemisBanking.Application.Interfaces.Services;
 using ArtemisBanking.Domain.Entities;
 using ArtemisBanking.Domain.Enums;
+using ArtemisBanking.Infrastructure.Services;
 using ArtemisBanking.Shared.Helpers;
 using ArtemisBanking.WebApp.ViewModels.Admin;
 using Microsoft.AspNetCore.Authorization;
@@ -94,12 +95,21 @@ public class UsersController : Controller
             return View(model);
         }
 
+        var normalizedIdentityCard = model.IdentityCard.Trim();
+        if (await _userManager.Users.AnyAsync(u => u.IdentityCard == normalizedIdentityCard))
+        {
+            ModelState.AddModelError(
+                nameof(model.IdentityCard),
+                "La cédula ya está registrada. Debes utilizar una cédula diferente.");
+            return View(model);
+        }
+
         // 1. Crear usuario desactivado y sin confirmar (hasta que active vía email)
         var user = new ApplicationUser
         {
             FirstName = model.FirstName,
             LastName = model.LastName,
-            IdentityCard = model.IdentityCard,
+            IdentityCard = normalizedIdentityCard,
             Email = model.Email,
             UserName = model.UserName,
             Role = model.Role,
@@ -107,7 +117,18 @@ public class UsersController : Controller
             EmailConfirmed = false
         };
 
-        var result = await _userManager.CreateAsync(user, model.Password);
+        IdentityResult result;
+        try
+        {
+            result = await _userManager.CreateAsync(user, model.Password);
+        }
+        catch (DbUpdateException)
+        {
+            ModelState.AddModelError(
+                nameof(model.IdentityCard),
+                "La cédula ya está registrada. Debes utilizar una cédula diferente.");
+            return View(model);
+        }
 
         if (!result.Succeeded)
         {
@@ -152,12 +173,13 @@ public class UsersController : Controller
         var activationLink = Url.Action("ActivateAccount", "Account", 
             new { area = "", userId = user.Id, token }, Request.Scheme)!;
 
-        // Se requiere template genérico o texto plano si Albertson no dejó un template de activación prearmado
         await _emailService.SendAsync(new EmailRequestDto
         {
             To = user.Email ?? string.Empty,
             Subject = "Bienvenido a Artemis Banking — Activa tu cuenta",
-            Body = $"<h1>Hola {user.FirstName}</h1><p>Tu cuenta ha sido creada. Click aquí para activarla: <a href='{activationLink}'>Activar Cuenta</a></p>"
+            Body = EmailTemplates.ActivateAccount(
+                $"{user.FirstName} {user.LastName}",
+                activationLink)
         });
 
         TempData["Success"] = $"Usuario {user.UserName} creado correctamente. Se le envió correo de activación.";

@@ -2,6 +2,7 @@ using ArtemisBanking.Application.DTOs.Account;
 using ArtemisBanking.Application.DTOs.Email;
 using ArtemisBanking.Application.Interfaces.Services;
 using ArtemisBanking.Domain.Entities;
+using ArtemisBanking.Infrastructure.Services;
 using ArtemisBanking.Shared.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -124,7 +125,9 @@ public class AccountController : ControllerBase
 
         try
         {
-            var emailBody = $"<h2>Solicitud de Reset de Contrasena</h2><p>Tu token de reset:</p><code>{resetToken}</code><p>Valido por 24 horas.</p>";
+            var emailBody = EmailTemplates.ResetPasswordApi(
+                $"{user.FirstName} {user.LastName}",
+                resetToken);
 
             await _emailService.SendAsync(new EmailRequestDto
             {
